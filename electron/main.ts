@@ -60,8 +60,6 @@ function createWindow(): void {
   // Load the renderer
   if (isDev) {
     mainWindow.loadURL(VITE_DEV_SERVER_URL);
-    // Open DevTools in dev mode — closed automatically when kiosk activates
-    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
@@ -110,41 +108,162 @@ function activateKioskMode(): void {
   mainWindow.setFullScreen(true);
   mainWindow.setMenuBarVisibility(false);
 
-  // Register global shortcuts to intercept/block common escape routes.
-  // These operate at the Electron application level — see KNOWN LIMITATION above.
-  const blockedShortcuts = [
-    'Alt+F4',       // Close window
-    'Escape',       // Common "back" / fullscreen-exit
-    'F11',          // Toggle fullscreen in many apps
-    'Ctrl+Shift+I', // Chrome devtools
-    'Ctrl+Shift+J', // Chrome devtools (console)
-    'F12',          // Devtools
-    'Ctrl+R',       // Reload
-    'Ctrl+Shift+R', // Hard reload
-    'Ctrl+W',       // Close tab
-    'Ctrl+N',       // New window
-    'Ctrl+T',       // New tab
-    'Alt+Left',     // Browser back
-    'Alt+Right',    // Browser forward
-  ];
-
-  for (const shortcut of blockedShortcuts) {
-    globalShortcut.register(shortcut, () => {
-      // Swallow the shortcut — do nothing.
-      // Logging suppressed to avoid spamming the audit log with keypress noise.
-    });
+  // Close DevTools if they were open (e.g. left open during dev testing)
+  if (mainWindow.webContents.isDevToolsOpened()) {
+    mainWindow.webContents.closeDevTools();
   }
 
-  // NOTE: Alt+Tab is handled at the OS level (process scheduling) and cannot
-  // be reliably intercepted by globalShortcut on Windows. It is registered
-  // here as best-effort but will not block OS-native window switching.
-  globalShortcut.register('Alt+Tab', () => { /* swallowed */ });
+  // ---------------------------------------------------------------------------
+  // Comprehensive shortcut blocking
+  // ---------------------------------------------------------------------------
+  // globalShortcut hooks at the keyboard driver level (before the OS processes
+  // most keys), so many Win+key combos CAN be intercepted here.
+  // Exceptions: Ctrl+Alt+Del (firmware-level), Win+L (OS security feature).
+  // ---------------------------------------------------------------------------
+
+  const blockedShortcuts: string[] = [
+    // ── Window / app escapes ──
+    'Alt+F4',           // Close window
+    'F11',              // Toggle fullscreen
+    'Escape',           // Back / fullscreen exit
+
+    // ── Alt combos ──
+    'Alt+Tab',          // Switch app (best-effort — OS controls this)
+    'Alt+Escape',       // Cycle windows
+    'Alt+Space',        // Window menu
+
+    // ── Ctrl+Esc / Start Menu ──
+    'Ctrl+Escape',      // Open Start Menu
+
+    // ── Task Manager ──
+    'Ctrl+Shift+Escape', // Task Manager
+
+    // ── DevTools / reload ──
+    'Ctrl+Shift+I',
+    'Ctrl+Shift+J',
+    'F12',
+    'Ctrl+R',
+    'Ctrl+Shift+R',
+
+    // ── Browser navigation shortcuts ──
+    'Ctrl+W',           // Close tab
+    'Ctrl+N',           // New window
+    'Ctrl+T',           // New tab
+    'Ctrl+Shift+T',     // Restore tab
+    'Ctrl+L',           // Address bar
+    'Ctrl+H',           // History
+    'Ctrl+J',           // Downloads
+    'Ctrl+U',           // View source
+    'Ctrl+P',           // Print
+    'Ctrl+O',           // Open file
+    'Ctrl+F',           // Find
+    'Alt+Left',         // Back
+    'Alt+Right',        // Forward
+
+    // ── Clipboard / edit (renderer will still handle these, but block OS-global) ──
+    'Ctrl+X',
+    'Ctrl+C',
+    'Ctrl+V',
+    'Ctrl+A',
+    'Ctrl+Z',
+    'Ctrl+Y',
+
+    // ── Screenshot ──
+    'PrintScreen',
+    'Shift+PrintScreen',
+
+    // ── Win key combos ──
+    // (Electron's globalShortcut CAN intercept many of these before Shell sees them)
+    'Super+D',          // Show Desktop
+    'Super+M',          // Minimize All
+    'Super+Shift+M',    // Restore Windows
+    'Super+E',          // File Explorer
+    'Super+R',          // Run Dialog
+    'Super+X',          // Power User Menu
+    'Super+I',          // Settings
+    'Super+S',          // Search
+    'Super+V',          // Clipboard History
+    'Super+G',          // Xbox Game Bar
+    'Super+P',          // Projection
+    'Super+K',          // Connect Devices
+    'Super+A',          // Quick Settings
+    'Super+N',          // Notifications
+    'Super+Tab',        // Task View
+    'Super+Shift+S',    // Snipping Tool
+    'Super+PrintScreen',// Screenshot to Pictures
+    'Super+Up',         // Snap Maximize
+    'Super+Down',       // Snap Restore/Minimize
+    'Super+Left',       // Snap Left
+    'Super+Right',      // Snap Right
+    'Super+H',          // Cortana / Voice
+    'Super+Q',          // Search
+    'Super+W',          // Widgets
+    'Super+Z',          // Snap Layout
+    'Super+Comma',      // Peek Desktop
+    'Super+Period',     // Emoji Picker
+  ];
+
+  // Register all — failures are silently ignored (some combos may be uncapturable)
+  for (const shortcut of blockedShortcuts) {
+    try {
+      globalShortcut.register(shortcut, () => { /* swallowed */ });
+    } catch {
+      // Shortcut not supported on this platform — skip silently
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Renderer-level: block browser shortcuts via before-input-event
+  // This catches keys that hit the WebContents AFTER the OS, covering any
+  // gaps in globalShortcut (e.g. Ctrl+C within the page context).
+  // ---------------------------------------------------------------------------
+  if (mainWindow) {
+    mainWindow.webContents.on('before-input-event', (_event, input) => {
+      // Block all Ctrl+key combos except Ctrl+A/Z/Y which may be useful in editor
+      const ctrl = input.control;
+      const key  = input.key.toLowerCase();
+
+      const browserBlockList = ['p', 'o', 'n', 't', 'w', 'h', 'j', 'u', 'f',
+                                'l', 'r', 'shift+r'];
+      if (ctrl && browserBlockList.includes(key)) {
+        _event.preventDefault();
+      }
+
+      // Block PrintScreen at renderer level too
+      if (input.key === 'PrintScreen') {
+        _event.preventDefault();
+      }
+
+      // Block F1–F12 except F5 (page reload already blocked via globalShortcut)
+      if (['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']
+          .includes(input.key)) {
+        _event.preventDefault();
+      }
+    });
+  }
 
   // ── Best-effort Alt+Tab mitigation ──
   // 'screen-saver' is the highest z-order level available in Electron.
   // On most Windows configurations this keeps the window above the Alt+Tab
   // switcher overlay, effectively preventing visual app switching.
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
+
+  // ── Win+D / Win+M mitigation ──
+  // These shortcuts are processed by the Windows shell (explorer.exe) BEFORE
+  // Electron's globalShortcut hook sees them, so they cannot be intercepted.
+  // Instead, we listen for the 'minimize' event and immediately restore + refocus.
+  mainWindow.on('minimize', () => {
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isKiosk()) {
+      setImmediate(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.restore();
+          mainWindow.focus();
+          mainWindow.moveTop();
+          mainWindow.setFullScreen(true);
+        }
+      });
+    }
+  });
 
   // If focus is somehow lost (e.g. via an OS notification or accessibility
   // tool), aggressively reclaim it. This is a best-effort measure — it
@@ -155,8 +274,11 @@ function activateKioskMode(): void {
       // Small delay to avoid fighting with OS focus transitions
       setTimeout(() => {
         if (mainWindow && !mainWindow.isDestroyed()) {
+          // Restore first in case Win+D/Win+M minimized us
+          if (mainWindow.isMinimized()) mainWindow.restore();
           mainWindow.focus();
           mainWindow.moveTop();
+          mainWindow.setFullScreen(true);
         }
       }, 100);
     }
