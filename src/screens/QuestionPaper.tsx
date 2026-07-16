@@ -78,31 +78,37 @@ export default function QuestionPaper() {
     return (
       <div className={submitStyles.submittedRoot}>
         <div className={submitStyles.submittedCard}>
-          <div className={submitStyles.submittedIcon}>✅</div>
-          <h1 className={submitStyles.submittedTitle}>Examination Submitted</h1>
-          <p className={submitStyles.submittedSubtitle}>
-            Your answers have been recorded and secured.
-          </p>
-          <div className={submitStyles.submittedDetails}>
-            <div className={submitStyles.detailRow}>
-              <span className={submitStyles.detailLabel}>Candidate</span>
-              <span className={submitStyles.detailValue}>{studentName}</span>
-            </div>
-            <div className={submitStyles.detailRow}>
-              <span className={submitStyles.detailLabel}>Exam</span>
-              <span className={submitStyles.detailValue}>{examTitle}</span>
-            </div>
-            <div className={submitStyles.detailRow}>
-              <span className={submitStyles.detailLabel}>Status</span>
-              <span className={submitStyles.detailValue} style={{color: 'var(--color-success)'}}>Submitted ✓</span>
-            </div>
+          {/* Green header strip */}
+          <div className={submitStyles.submittedHeader}>
+            <div className={submitStyles.submittedIcon}>✅</div>
+            <h1 className={submitStyles.submittedTitle}>Examination Submitted</h1>
+            <p className={submitStyles.submittedSubtitle}>
+              Your answers have been recorded and secured.
+            </p>
           </div>
-          <p className={submitStyles.submittedNote}>
-            Please remain seated. The invigilator will collect this device.
-          </p>
-          <p className={submitStyles.countdownText}>
-            Application closing in <strong>{countdown}</strong> second{countdown !== 1 ? 's' : ''}…
-          </p>
+          {/* Body */}
+          <div className={submitStyles.submittedBody}>
+            <div className={submitStyles.submittedDetails}>
+              <div className={submitStyles.detailRow}>
+                <span className={submitStyles.detailLabel}>Candidate</span>
+                <span className={submitStyles.detailValue}>{studentName}</span>
+              </div>
+              <div className={submitStyles.detailRow}>
+                <span className={submitStyles.detailLabel}>Exam</span>
+                <span className={submitStyles.detailValue}>{examTitle}</span>
+              </div>
+              <div className={submitStyles.detailRow}>
+                <span className={submitStyles.detailLabel}>Status</span>
+                <span className={submitStyles.detailValue} style={{color: 'var(--color-success)'}}>Submitted ✓</span>
+              </div>
+            </div>
+            <p className={submitStyles.submittedNote}>
+              Please remain seated. The invigilator will collect this device.
+            </p>
+            <p className={submitStyles.countdownText}>
+              Application closing in <strong>{countdown}</strong> second{countdown !== 1 ? 's' : ''}…
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -212,27 +218,33 @@ export default function QuestionPaper() {
       {showConfirm && (
         <div className={submitStyles.modalOverlay}>
           <div className={submitStyles.modalCard}>
-            <div className={submitStyles.modalIcon}>⚠️</div>
-            <h2 className={submitStyles.modalTitle}>Submit Examination?</h2>
-            <p className={submitStyles.modalDesc}>
-              Once submitted, you <strong>cannot</strong> return to edit your answers.
-              Please review all questions before confirming.
-            </p>
-            <div className={submitStyles.modalActions}>
-              <button
-                className={submitStyles.modalCancelBtn}
-                onClick={() => setShowConfirm(false)}
-                disabled={submitting}
-              >
-                Go Back
-              </button>
-              <button
-                className={submitStyles.modalConfirmBtn}
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting…' : 'Confirm Submit'}
-              </button>
+            {/* Red header strip */}
+            <div className={submitStyles.modalHeader}>
+              <div className={submitStyles.modalIcon}>⚠️</div>
+              <h2 className={submitStyles.modalTitle}>Submit Examination?</h2>
+            </div>
+            {/* Body */}
+            <div className={submitStyles.modalBody}>
+              <p className={submitStyles.modalDesc}>
+                Once submitted, you <strong>cannot</strong> return to edit your answers.
+                Please review all questions before confirming.
+              </p>
+              <div className={submitStyles.modalActions}>
+                <button
+                  className={submitStyles.modalCancelBtn}
+                  onClick={() => setShowConfirm(false)}
+                  disabled={submitting}
+                >
+                  Go Back
+                </button>
+                <button
+                  className={submitStyles.modalConfirmBtn}
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                >
+                  {submitting ? 'Submitting…' : 'Confirm Submit'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

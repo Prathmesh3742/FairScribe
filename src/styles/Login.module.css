@@ -1,4 +1,4 @@
-/* Login.module.css */
+/* Login.module.css — Light mode, government exam aesthetic */
 
 .root {
   width: 100%;
@@ -6,89 +6,89 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(ellipse at 70% 30%, rgba(88, 166, 255, 0.07) 0%, transparent 55%),
-    radial-gradient(ellipse at 30% 70%, rgba(46, 164, 168, 0.07) 0%, transparent 55%),
-    var(--color-bg);
+  background: var(--color-bg);
   padding: 24px;
 }
 
 .card {
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 48px 40px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(88, 166, 255, 0.08);
-  animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
-/* ─── Header ─── */
+/* ─── Blue header strip ─── */
 .header {
+  background: var(--color-primary);
+  padding: 24px 32px;
   text-align: center;
-  margin-bottom: 36px;
 }
 
 .logoMark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-md);
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #000;
-  margin-bottom: 16px;
-  box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+  color: #ffffff;
+  margin-bottom: 10px;
 }
 
 .title {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 4px;
+  color: #ffffff;
+  margin-bottom: 2px;
 }
 
 .subtitle {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  font-weight: 400;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* ─── Form ─── */
+/* ─── Form body ─── */
+.formBody {
+  padding: 28px 32px 32px;
+}
+
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -104,50 +104,44 @@
 .errorMsg {
   font-size: 0.85rem;
   color: var(--color-danger);
-  padding: 12px 14px;
+  padding: 10px 12px;
   background: var(--color-danger-dim);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(248, 81, 73, 0.3);
+  border: 1px solid rgba(192, 28, 40, 0.2);
   line-height: 1.5;
 }
 
 .submitBtn {
   composes: btn-base from './global.css';
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--color-accent), #3a84d4);
-  color: #000;
+  padding: 12px;
+  background: var(--color-primary);
+  color: #ffffff;
   font-weight: 600;
   font-size: 1rem;
   border-radius: var(--radius-md);
   margin-top: 4px;
-  box-shadow: 0 4px 14px rgba(88, 166, 255, 0.35);
-  transition: all 0.2s ease;
+  border: 1px solid var(--color-primary-hover);
+  transition: background var(--transition-fast);
 }
 
 .submitBtn:not(:disabled):hover {
-  background: linear-gradient(135deg, #6ab6ff, #4a94e4);
-  box-shadow: 0 6px 20px rgba(88, 166, 255, 0.45);
-  transform: translateY(-1px);
-}
-
-.submitBtn:not(:disabled):active {
-  transform: translateY(0);
+  background: var(--color-primary-hover);
 }
 
 .submitBtn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* ─── Note ─── */
 .note {
-  margin-top: 24px;
+  margin-top: 20px;
   font-size: 0.78rem;
   color: var(--color-text-muted);
   text-align: center;
   line-height: 1.6;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   background: var(--color-surface-2);

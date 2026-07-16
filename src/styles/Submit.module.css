@@ -1,4 +1,4 @@
-/* Submit.module.css — Submit button, confirmation modal, post-submission screen */
+/* Submit.module.css — Light mode, government exam aesthetic */
 
 /* ─── Nav bar layout (wraps QuestionNav + Submit button) ─── */
 .navBarInner {
@@ -15,73 +15,80 @@
 
 /* ─── Submit button ─── */
 .submitBtn {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  padding: 10px 24px;
+  background: var(--color-danger);
+  border: 1px solid rgba(192, 28, 40, 0.4);
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   border-radius: var(--radius-md);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.25);
+  transition: background var(--transition-fast);
 }
 
 .submitBtn:hover {
-  background: linear-gradient(135deg, #c0392b, #a93226);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.35);
+  background: #a61b25;
 }
 
 .submitBtn:active {
-  transform: translateY(0);
+  background: #900;
 }
 
 /* ─── Confirmation modal ─── */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }
 
 .modalCard {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  max-width: 480px;
+  overflow: hidden;
+  max-width: 460px;
   width: 90%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease-out;
+}
+
+/* Red header strip on modal */
+.modalHeader {
+  background: var(--color-danger);
+  padding: 20px 28px;
   text-align: center;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
-  animation: slideUp 0.25s ease-out;
 }
 
 .modalIcon {
-  font-size: 3rem;
-  margin-bottom: 12px;
+  font-size: 2rem;
+  margin-bottom: 4px;
 }
 
 .modalTitle {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--color-text);
-  margin: 0 0 12px 0;
+  color: #ffffff;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 24px 28px;
+  text-align: center;
 }
 
 .modalDesc {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
-  margin: 0 0 28px 0;
+  margin: 0 0 24px 0;
 }
 
 .modalActions {
@@ -91,15 +98,15 @@
 }
 
 .modalCancelBtn {
-  padding: 12px 28px;
-  background: var(--color-surface-3);
+  padding: 10px 24px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.9rem;
   font-weight: 500;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .modalCancelBtn:hover:not(:disabled) {
@@ -109,26 +116,24 @@
 }
 
 .modalConfirmBtn {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  padding: 10px 24px;
+  background: var(--color-danger);
+  border: 1px solid rgba(192, 28, 40, 0.4);
   color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.25);
+  transition: background var(--transition-fast);
 }
 
 .modalConfirmBtn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #c0392b, #a93226);
-  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.35);
+  background: #a61b25;
 }
 
 .modalConfirmBtn:disabled,
 .modalCancelBtn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -145,46 +150,57 @@
 .submittedCard {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 60px 48px;
-  max-width: 560px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  max-width: 520px;
   width: 90%;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.35s ease-out;
+}
+
+/* Green header strip for success */
+.submittedHeader {
+  background: var(--color-success);
+  padding: 28px 32px;
   text-align: center;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.4s ease-out;
 }
 
 .submittedIcon {
-  font-size: 4rem;
-  margin-bottom: 16px;
+  font-size: 3rem;
+  margin-bottom: 8px;
 }
 
 .submittedTitle {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-text);
-  margin: 0 0 8px 0;
+  color: #ffffff;
+  margin: 0 0 4px 0;
 }
 
 .submittedSubtitle {
-  font-size: 1rem;
-  color: var(--color-text-secondary);
-  margin: 0 0 32px 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* Card body */
+.submittedBody {
+  padding: 28px 32px;
 }
 
 .submittedDetails {
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  padding: 20px 24px;
-  margin-bottom: 24px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
 }
 
 .detailRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 7px 0;
 }
 
 .detailRow + .detailRow {
@@ -192,36 +208,37 @@
 }
 
 .detailLabel {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .detailValue {
-  font-size: 0.9rem;
+  font-size: 0.87rem;
   color: var(--color-text);
   font-weight: 600;
 }
 
 .submittedNote {
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   line-height: 1.5;
-  font-style: italic;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
+  text-align: center;
 }
 
 .countdownText {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
   margin: 0;
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--color-border-subtle);
+  text-align: center;
 }
 
 .countdownText strong {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--color-primary);
 }
 
@@ -232,6 +249,6 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }

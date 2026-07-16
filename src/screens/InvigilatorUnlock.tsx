@@ -52,61 +52,64 @@ export default function InvigilatorUnlock({ onUnlocked }: Props) {
   return (
     <div className={styles.root}>
       <div className={styles.card}>
-        {/* Header */}
-        <div className={styles.header}>
+        {/* Blue header strip */}
+        <div className={styles.cardHeader}>
           <div className={styles.logoMark}>FS</div>
           <h1 className={styles.title}>FairScribe</h1>
           <p className={styles.subtitle}>Secure Examination Terminal</p>
         </div>
 
-        {/* Invigilator section */}
-        <div className={styles.gateLabel}>
-          <span className={styles.gateBadge}>INVIGILATOR</span>
-          <span className={styles.gateDesc}>Enter authorization PIN to begin</span>
-        </div>
-
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          <div className={styles.fieldGroup}>
-            <label htmlFor="invig-pin" className={styles.label}>
-              Invigilator PIN
-            </label>
-            <input
-              ref={inputRef}
-              id="invig-pin"
-              type="password"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              maxLength={8}
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              className={`${styles.input} ${error ? styles.inputError : ''}`}
-              placeholder="••••••••"
-              aria-describedby={error ? 'invig-pin-error' : undefined}
-              aria-invalid={error ? 'true' : 'false'}
-              disabled={isChecking}
-            />
-            {error && (
-              <p id="invig-pin-error" className={styles.errorMsg} role="alert">
-                {error}
-              </p>
-            )}
+        {/* Card body */}
+        <div className={styles.cardBody}>
+          <div className={styles.gateLabel}>
+            <span className={styles.gateBadge}>INVIGILATOR</span>
+            <span className={styles.gateDesc}>Enter authorization PIN to begin</span>
           </div>
 
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={pin.length === 0 || isChecking}
-          >
-            {isChecking ? 'Verifying…' : 'Unlock Terminal'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="invig-pin" className={styles.label}>
+                Invigilator PIN
+              </label>
+              <input
+                ref={inputRef}
+                id="invig-pin"
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                maxLength={8}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className={`${styles.input} ${error ? styles.inputError : ''}`}
+                placeholder="••••••••"
+                aria-describedby={error ? 'invig-pin-error' : undefined}
+                aria-invalid={error ? 'true' : 'false'}
+                disabled={isChecking}
+              />
+              {error && (
+                <p id="invig-pin-error" className={styles.errorMsg} role="alert">
+                  {error}
+                </p>
+              )}
+            </div>
 
-        <p className={styles.disclaimer}>
-          This terminal is for authorized examination use only.
-          Unauthorized access is prohibited.
-        </p>
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={pin.length === 0 || isChecking}
+            >
+              {isChecking ? 'Verifying…' : 'Unlock Terminal'}
+            </button>
+          </form>
+
+          <p className={styles.disclaimer}>
+            This terminal is for authorized examination use only.
+            Unauthorized access is prohibited.
+          </p>
+        </div>
       </div>
     </div>
+
   );
 }

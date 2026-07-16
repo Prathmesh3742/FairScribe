@@ -1,4 +1,4 @@
-/* components.module.css — shared styles for Timer, QuestionNav, AccessibilityControls */
+/* components.module.css — shared styles for Timer, QuestionNav, AccessibilityControls (Light mode) */
 
 /* =====================================================
    Timer
@@ -8,28 +8,28 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
-  padding: 10px 16px;
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border);
+  gap: 1px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-md);
-  min-width: 140px;
+  min-width: 130px;
   transition: background var(--transition-normal), border-color var(--transition-normal);
 }
 
 .timerLabel {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.6rem;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .timerDisplay {
   font-family: var(--font-mono);
-  font-size: 1.6rem;
-  font-weight: 500;
-  color: var(--color-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
   letter-spacing: 0.04em;
   line-height: 1;
   transition: color var(--transition-normal);
@@ -37,26 +37,32 @@
 
 /* Under 5 minutes — warning state */
 .timerLow {
-  background: rgba(210, 153, 34, 0.1);
-  border-color: rgba(210, 153, 34, 0.4);
+  background: rgba(255, 204, 0, 0.2);
+  border-color: rgba(255, 204, 0, 0.5);
 }
 .timerLow .timerDisplay {
-  color: var(--color-warning);
+  color: #ffdd44;
+}
+.timerLow .timerLabel {
+  color: rgba(255, 221, 68, 0.85);
 }
 
 /* Under 1 minute — critical state */
 .timerCritical {
-  background: rgba(248, 81, 73, 0.1);
-  border-color: rgba(248, 81, 73, 0.4);
+  background: rgba(255, 80, 80, 0.25);
+  border-color: rgba(255, 80, 80, 0.6);
   animation: timerPulse 1s ease-in-out infinite;
 }
 .timerCritical .timerDisplay {
-  color: var(--color-danger);
+  color: #ff6666;
+}
+.timerCritical .timerLabel {
+  color: rgba(255, 100, 100, 0.9);
 }
 
 @keyframes timerPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  50% { opacity: 0.75; }
 }
 
 /* =====================================================
@@ -73,21 +79,20 @@
 
 .navBtn {
   composes: btn-base from './global.css';
-  padding: 10px 20px;
-  background: var(--color-surface-3);
+  padding: 8px 18px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   border-radius: var(--radius-md);
-  min-width: 110px;
+  min-width: 100px;
   transition: all var(--transition-fast);
 }
 
 .navBtn:not(:disabled):hover {
-  background: var(--color-surface-2);
+  background: var(--color-primary-dim);
   border-color: var(--color-primary);
   color: var(--color-primary);
-  transform: translateY(-1px);
 }
 
 .navBtnPrev::before {
@@ -101,36 +106,35 @@
 .jumpButtons {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .jumpBtn {
   composes: btn-base from './global.css';
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   padding: 0;
-  background: var(--color-surface-3);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
 
 .jumpBtn:not(:disabled):hover {
-  background: var(--color-accent-dim);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  background: var(--color-primary-dim);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .jumpBtnActive {
-  background: var(--color-primary-dim) !important;
+  background: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
-  color: var(--color-primary) !important;
-  font-weight: 600;
-  box-shadow: 0 0 10px var(--color-primary-glow);
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 /* =====================================================
@@ -151,44 +155,43 @@
 }
 
 .a11yGroupLabel {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--color-text-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 .a11yBtn {
   composes: btn-base from './global.css';
-  padding: 7px 14px;
-  background: var(--color-surface-3);
+  padding: 6px 12px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
 
 .a11yBtn:not(:disabled):hover {
-  background: var(--color-surface-2);
+  background: var(--color-primary-dim);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
 .a11yBtnActive {
-  background: rgba(46, 164, 168, 0.15) !important;
+  background: var(--color-primary-dim) !important;
   border-color: var(--color-primary) !important;
   color: var(--color-primary) !important;
-  box-shadow: 0 0 8px var(--color-primary-glow);
 }
 
 .a11yZoomValue {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
-  min-width: 38px;
+  min-width: 36px;
   text-align: center;
 }

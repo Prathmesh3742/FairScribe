@@ -1,7 +1,8 @@
 /* ============================================================
-   FairScribe — Global Styles
+   FairScribe — Global Styles (Light Mode — Government Exam)
    ============================================================ */
 
+/* Inter is a clean, highly legible font well-suited for exam interfaces */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ─── CSS Custom Properties (Design Tokens) ─── */
@@ -9,46 +10,55 @@
   /* Font scale — modified by AccessibilityControls.tsx */
   --question-font-scale: 1;
 
-  /* Colour palette — deep navy + electric teal */
-  --color-bg:            #0d1117;
-  --color-surface:       #161b22;
-  --color-surface-2:     #1c2333;
-  --color-surface-3:     #21262d;
-  --color-border:        #30363d;
-  --color-border-subtle: #21262d;
+  /* ── Colour palette: light, institutional, government-grade ── */
 
-  --color-primary:       #2ea4a8;
-  --color-primary-hover: #3bbec3;
-  --color-primary-dim:   #1a6466;
-  --color-primary-glow:  rgba(46, 164, 168, 0.25);
+  /* Backgrounds */
+  --color-bg:            #f0f2f5;   /* Page bg — very light grey */
+  --color-surface:       #ffffff;   /* Cards, panels */
+  --color-surface-2:     #f5f7fa;   /* Subtle section bg */
+  --color-surface-3:     #eaecf0;   /* Input backgrounds, chips */
 
-  --color-accent:        #58a6ff;
-  --color-accent-dim:    rgba(88, 166, 255, 0.15);
+  /* Borders */
+  --color-border:        #c8d0da;
+  --color-border-subtle: #dde3ea;
 
-  --color-success:       #3fb950;
-  --color-warning:       #d29922;
-  --color-danger:        #f85149;
-  --color-danger-dim:    rgba(248, 81, 73, 0.15);
+  /* Government blue — primary action colour */
+  --color-primary:       #1a5fb4;
+  --color-primary-hover: #154d99;
+  --color-primary-dim:   #d0e4ff;
+  --color-primary-glow:  rgba(26, 95, 180, 0.15);
 
-  --color-text:          #e6edf3;
-  --color-text-secondary:#8b949e;
-  --color-text-muted:    #484f58;
+  /* Accent (same blue family) */
+  --color-accent:        #1a5fb4;
+  --color-accent-dim:    rgba(26, 95, 180, 0.1);
+
+  /* Semantic colours */
+  --color-success:       #2d7c3f;
+  --color-success-dim:   rgba(45, 124, 63, 0.1);
+  --color-warning:       #9a6700;
+  --color-warning-dim:   rgba(154, 103, 0, 0.1);
+  --color-danger:        #c01c28;
+  --color-danger-dim:    rgba(192, 28, 40, 0.08);
+
+  /* Text */
+  --color-text:          #1c2630;   /* Near-black — primary text */
+  --color-text-secondary:#445566;   /* Labels, secondary text */
+  --color-text-muted:    #7a8fa6;   /* Hints, notes */
 
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
 
-  /* Spacing */
-  --radius-sm:   6px;
-  --radius-md:   10px;
-  --radius-lg:   16px;
-  --radius-xl:   24px;
+  /* Border radius — simpler, less rounded for formal feel */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-xl:   12px;
 
-  /* Shadows */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
-  --shadow-lg:   0 8px 32px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
-  --shadow-glow: 0 0 20px var(--color-primary-glow);
+  /* Shadows — neutral light shadows on white */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:   0 8px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.07);
 
   /* Transitions */
   --transition-fast:   150ms ease;
@@ -60,9 +70,8 @@
  * Applied by AccessibilityControls.tsx via:
  *   document.documentElement.setAttribute('data-theme', 'high-contrast')
  *
- * Explicit colour values — NOT filter: invert().
- * Using invert() would distort colours in a confusing way.
- * These values are chosen for WCAG AA compliance on black backgrounds.
+ * Black background with maximum contrast text and borders.
+ * WCAG AAA compliant.
  */
 [data-theme="high-contrast"] {
   --color-bg:            #000000;
@@ -70,24 +79,26 @@
   --color-surface-2:     #111111;
   --color-surface-3:     #1a1a1a;
   --color-border:        #ffffff;
-  --color-border-subtle: #888888;
+  --color-border-subtle: #666666;
 
-  --color-primary:       #00ffff;
-  --color-primary-hover: #33ffff;
-  --color-primary-dim:   #005555;
-  --color-primary-glow:  rgba(0, 255, 255, 0.3);
+  --color-primary:       #4da6ff;
+  --color-primary-hover: #70baff;
+  --color-primary-dim:   #003366;
+  --color-primary-glow:  rgba(77, 166, 255, 0.3);
 
-  --color-accent:        #ffff00;
-  --color-accent-dim:    rgba(255, 255, 0, 0.2);
+  --color-accent:        #4da6ff;
+  --color-accent-dim:    rgba(77, 166, 255, 0.2);
 
-  --color-success:       #00ff00;
-  --color-warning:       #ffaa00;
+  --color-success:       #00cc44;
+  --color-success-dim:   rgba(0, 204, 68, 0.15);
+  --color-warning:       #ffcc00;
+  --color-warning-dim:   rgba(255, 204, 0, 0.15);
   --color-danger:        #ff4444;
-  --color-danger-dim:    rgba(255, 68, 68, 0.25);
+  --color-danger-dim:    rgba(255, 68, 68, 0.2);
 
   --color-text:          #ffffff;
   --color-text-secondary:#cccccc;
-  --color-text-muted:    #888888;
+  --color-text-muted:    #999999;
 
   --shadow-sm:   0 1px 3px rgba(0,0,0,0.8);
   --shadow-md:   0 4px 16px rgba(0,0,0,0.9);
@@ -134,7 +145,7 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: var(--color-surface-2);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
@@ -166,8 +177,8 @@ p {
 /* ─── Shared input styles ─── */
 .input-base {
   width: 100%;
-  padding: 12px 16px;
-  background: var(--color-surface-3);
+  padding: 10px 14px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
@@ -188,26 +199,17 @@ p {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .btn-base:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
-  transform: none !important;
-}
-
-.btn-base:not(:disabled):hover {
-  transform: translateY(-1px);
-}
-
-.btn-base:not(:disabled):active {
-  transform: translateY(0);
 }
