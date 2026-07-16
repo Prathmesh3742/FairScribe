@@ -1,0 +1,194 @@
+/* components.module.css — shared styles for Timer, QuestionNav, AccessibilityControls */
+
+/* =====================================================
+   Timer
+   ===================================================== */
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 10px 16px;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-width: 140px;
+  transition: background var(--transition-normal), border-color var(--transition-normal);
+}
+
+.timerLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.timerDisplay {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  transition: color var(--transition-normal);
+}
+
+/* Under 5 minutes — warning state */
+.timerLow {
+  background: rgba(210, 153, 34, 0.1);
+  border-color: rgba(210, 153, 34, 0.4);
+}
+.timerLow .timerDisplay {
+  color: var(--color-warning);
+}
+
+/* Under 1 minute — critical state */
+.timerCritical {
+  background: rgba(248, 81, 73, 0.1);
+  border-color: rgba(248, 81, 73, 0.4);
+  animation: timerPulse 1s ease-in-out infinite;
+}
+.timerCritical .timerDisplay {
+  color: var(--color-danger);
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* =====================================================
+   QuestionNav
+   ===================================================== */
+
+.questionNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.navBtn {
+  composes: btn-base from './global.css';
+  padding: 10px 20px;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  min-width: 110px;
+  transition: all var(--transition-fast);
+}
+
+.navBtn:not(:disabled):hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.navBtnPrev::before {
+  content: '';
+}
+
+.navBtnNext::after {
+  content: '';
+}
+
+.jumpButtons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.jumpBtn {
+  composes: btn-base from './global.css';
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.jumpBtn:not(:disabled):hover {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.jumpBtnActive {
+  background: var(--color-primary-dim) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 0 10px var(--color-primary-glow);
+}
+
+/* =====================================================
+   AccessibilityControls
+   ===================================================== */
+
+.a11yControls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.a11yGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.a11yGroupLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.a11yBtn {
+  composes: btn-base from './global.css';
+  padding: 7px 14px;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.a11yBtn:not(:disabled):hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.a11yBtnActive {
+  background: rgba(46, 164, 168, 0.15) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  box-shadow: 0 0 8px var(--color-primary-glow);
+}
+
+.a11yZoomValue {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  min-width: 38px;
+  text-align: center;
+}

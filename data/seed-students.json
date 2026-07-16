@@ -1,0 +1,31 @@
+{
+  "students": [
+    {
+      "studentId": "STU-2024-001",
+      "name": "Arjun Mehta",
+      "examId": "EXAM001",
+      "disabilityCategory": "motor_impairment",
+      "accommodationProfile": "{\"scribesAllowed\": true, \"extraTime\": 60, \"fontSizeDefault\": 1.2}",
+      "deviceAssigned": "DEVICE-A1",
+      "accessCode": "arjun2024"
+    },
+    {
+      "studentId": "STU-2024-002",
+      "name": "Priya Nair",
+      "examId": "EXAM001",
+      "disabilityCategory": "cerebral_palsy",
+      "accommodationProfile": "{\"scribesAllowed\": true, \"extraTime\": 60, \"highContrastDefault\": true}",
+      "deviceAssigned": "DEVICE-B2",
+      "accessCode": "priya2024"
+    },
+    {
+      "studentId": "STU-2024-003",
+      "name": "Rohan Sharma",
+      "examId": "EXAM001",
+      "disabilityCategory": "muscular_dystrophy",
+      "accommodationProfile": "{\"scribesAllowed\": true, \"extraTime\": 60, \"voiceCommandsOnly\": false}",
+      "deviceAssigned": "DEVICE-C3",
+      "accessCode": "rohan2024"
+    }
+  ]
+}

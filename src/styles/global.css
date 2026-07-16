@@ -1,0 +1,213 @@
+/* ============================================================
+   FairScribe — Global Styles
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ─── CSS Custom Properties (Design Tokens) ─── */
+:root {
+  /* Font scale — modified by AccessibilityControls.tsx */
+  --question-font-scale: 1;
+
+  /* Colour palette — deep navy + electric teal */
+  --color-bg:            #0d1117;
+  --color-surface:       #161b22;
+  --color-surface-2:     #1c2333;
+  --color-surface-3:     #21262d;
+  --color-border:        #30363d;
+  --color-border-subtle: #21262d;
+
+  --color-primary:       #2ea4a8;
+  --color-primary-hover: #3bbec3;
+  --color-primary-dim:   #1a6466;
+  --color-primary-glow:  rgba(46, 164, 168, 0.25);
+
+  --color-accent:        #58a6ff;
+  --color-accent-dim:    rgba(88, 166, 255, 0.15);
+
+  --color-success:       #3fb950;
+  --color-warning:       #d29922;
+  --color-danger:        #f85149;
+  --color-danger-dim:    rgba(248, 81, 73, 0.15);
+
+  --color-text:          #e6edf3;
+  --color-text-secondary:#8b949e;
+  --color-text-muted:    #484f58;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+
+  /* Spacing */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 20px var(--color-primary-glow);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* ─── High Contrast Theme ─── */
+/*
+ * Applied by AccessibilityControls.tsx via:
+ *   document.documentElement.setAttribute('data-theme', 'high-contrast')
+ *
+ * Explicit colour values — NOT filter: invert().
+ * Using invert() would distort colours in a confusing way.
+ * These values are chosen for WCAG AA compliance on black backgrounds.
+ */
+[data-theme="high-contrast"] {
+  --color-bg:            #000000;
+  --color-surface:       #0a0a0a;
+  --color-surface-2:     #111111;
+  --color-surface-3:     #1a1a1a;
+  --color-border:        #ffffff;
+  --color-border-subtle: #888888;
+
+  --color-primary:       #00ffff;
+  --color-primary-hover: #33ffff;
+  --color-primary-dim:   #005555;
+  --color-primary-glow:  rgba(0, 255, 255, 0.3);
+
+  --color-accent:        #ffff00;
+  --color-accent-dim:    rgba(255, 255, 0, 0.2);
+
+  --color-success:       #00ff00;
+  --color-warning:       #ffaa00;
+  --color-danger:        #ff4444;
+  --color-danger-dim:    rgba(255, 68, 68, 0.25);
+
+  --color-text:          #ffffff;
+  --color-text-secondary:#cccccc;
+  --color-text-muted:    #888888;
+
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.8);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.9);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.95);
+}
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Kiosk — no scrollbars on root */
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none; /* Disable text selection globally for kiosk feel */
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Allow text selection in question + answer areas */
+.selectable {
+  user-select: text;
+}
+
+/* ─── Scrollbar styling ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Focus styles ─── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Typography utilities ─── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text);
+}
+
+p {
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* ─── Shared input styles ─── */
+.input-base {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+/* ─── Button base ─── */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-base:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-base:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.btn-base:not(:disabled):active {
+  transform: translateY(0);
+}
