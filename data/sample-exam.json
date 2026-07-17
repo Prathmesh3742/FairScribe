@@ -3,31 +3,72 @@
   "examTitle": "General Studies — Paper I (Mock Examination 2024)",
   "duration": 7200,
   "languageConfig": "en-IN",
-  "questions": [
+  "instructions": {
+    "general": [
+      "This examination consists of multiple sections. You may navigate freely between sections and questions at any time during the examination.",
+      "Each question carries the marks indicated alongside it. Read each question carefully before answering.",
+      "Your answers will be recorded via dictation. Speak clearly and at a moderate pace for accurate transcription.",
+      "Do not attempt to close, minimise, or switch away from this application during the examination.",
+      "In case of any technical difficulty, raise your hand to alert the invigilator. Do not attempt to resolve issues yourself.",
+      "The examination timer will count down from the total allotted time. When time expires, the examination will be automatically submitted.",
+      "You may return to any question to review or revise your answer before submitting.",
+      "Once you click 'Submit Exam' and confirm, your answers will be finalised and you cannot make further changes."
+    ],
+    "examSpecific": [
+      "This paper covers General Awareness, Essay Writing, and Polity & Governance.",
+      "For essay-type questions, structure your answer with an introduction, body paragraphs, and a conclusion.",
+      "Answers should be in English unless otherwise specified in the question.",
+      "Use factual examples and case studies wherever relevant to substantiate your arguments.",
+      "Avoid repeating points across sections — each answer should be self-contained."
+    ],
+    "markingScheme": "No negative marking. Each question is independently scored. Partial credit may be awarded for well-reasoned incomplete answers at the examiner's discretion."
+  },
+  "sections": [
     {
-      "questionId": "Q001",
-      "questionText": "India's biodiversity hotspots are regions of significant biological diversity that are threatened by human habitation. Identify any two biodiversity hotspots in India and explain the significance of each in terms of endemic species, ecological services they provide, and the primary conservation challenges they face. Your answer should draw on specific examples of flora and fauna found exclusively within each hotspot.",
-      "marks": 15
+      "sectionId": "SEC-1",
+      "sectionName": "General Awareness",
+      "sectionOrder": 1,
+      "questions": [
+        {
+          "questionId": "Q001",
+          "questionText": "India's biodiversity hotspots are regions of significant biological diversity that are threatened by human habitation. Identify any two biodiversity hotspots in India and explain the significance of each in terms of endemic species, ecological services they provide, and the primary conservation challenges they face. Your answer should draw on specific examples of flora and fauna found exclusively within each hotspot.",
+          "marks": 15
+        },
+        {
+          "questionId": "Q002",
+          "questionText": "The Right to Education Act, 2009, mandated free and compulsory education for children between the ages of 6 and 14. Critically examine the extent to which this act has achieved its intended objectives over the fifteen years since its enactment. In your analysis, consider both quantitative indicators such as enrolment and dropout rates, and qualitative dimensions such as learning outcomes and infrastructure quality, particularly in rural and tribal areas.",
+          "marks": 15
+        }
+      ]
     },
     {
-      "questionId": "Q002",
-      "questionText": "The Right to Education Act, 2009, mandated free and compulsory education for children between the ages of 6 and 14. Critically examine the extent to which this act has achieved its intended objectives over the fifteen years since its enactment. In your analysis, consider both quantitative indicators such as enrolment and dropout rates, and qualitative dimensions such as learning outcomes and infrastructure quality, particularly in rural and tribal areas.",
-      "marks": 15
+      "sectionId": "SEC-2",
+      "sectionName": "Essay Writing",
+      "sectionOrder": 2,
+      "questions": [
+        {
+          "questionId": "Q003",
+          "questionText": "The Green Revolution transformed Indian agriculture between the 1960s and 1980s, dramatically increasing food grain production and averting large-scale famine. However, it also generated a set of long-term agricultural, ecological, and socio-economic consequences that continue to shape Indian farming today. Evaluate both the achievements and the unintended consequences of the Green Revolution, and discuss how contemporary agricultural policy initiatives — such as the Soil Health Card scheme, Pradhan Mantri Fasal Bima Yojana, and the push toward natural farming — attempt to address its legacy challenges.",
+          "marks": 20
+        },
+        {
+          "questionId": "Q004",
+          "questionText": "Examine the role of the Indian Ocean in shaping India's geopolitical strategy in the twenty-first century. Your answer should address: (a) the strategic importance of sea lanes of communication passing through the Indian Ocean Region; (b) India's Maritime Security Strategy and its relationship with the concept of SAGAR (Security and Growth for All in the Region); and (c) the significance of India's island territories — particularly the Andaman and Nicobar Islands — in projecting maritime power and ensuring regional stability.",
+          "marks": 20
+        }
+      ]
     },
     {
-      "questionId": "Q003",
-      "questionText": "The Parliament of India is bicameral, comprising the Lok Sabha and the Rajya Sabha. Explain the constitutional provisions that distinguish the powers of these two houses, with particular reference to Money Bills under Article 110, the role of the Rajya Sabha in federal legislation, and the circumstances under which a joint sitting of both houses may be convened. Use relevant constitutional articles and historical precedents to support your answer.",
-      "marks": 20
-    },
-    {
-      "questionId": "Q004",
-      "questionText": "Examine the role of the Indian Ocean in shaping India's geopolitical strategy in the twenty-first century. Your answer should address: (a) the strategic importance of sea lanes of communication passing through the Indian Ocean Region; (b) India's Maritime Security Strategy and its relationship with the concept of SAGAR (Security and Growth for All in the Region); and (c) the significance of India's island territories — particularly the Andaman and Nicobar Islands — in projecting maritime power and ensuring regional stability.",
-      "marks": 20
-    },
-    {
-      "questionId": "Q005",
-      "questionText": "The Green Revolution transformed Indian agriculture between the 1960s and 1980s, dramatically increasing food grain production and averting large-scale famine. However, it also generated a set of long-term agricultural, ecological, and socio-economic consequences that continue to shape Indian farming today. Evaluate both the achievements and the unintended consequences of the Green Revolution, and discuss how contemporary agricultural policy initiatives — such as the Soil Health Card scheme, Pradhan Mantri Fasal Bima Yojana, and the push toward natural farming — attempt to address its legacy challenges.",
-      "marks": 20
+      "sectionId": "SEC-3",
+      "sectionName": "Polity & Governance",
+      "sectionOrder": 3,
+      "questions": [
+        {
+          "questionId": "Q005",
+          "questionText": "The Parliament of India is bicameral, comprising the Lok Sabha and the Rajya Sabha. Explain the constitutional provisions that distinguish the powers of these two houses, with particular reference to Money Bills under Article 110, the role of the Rajya Sabha in federal legislation, and the circumstances under which a joint sitting of both houses may be convened. Use relevant constitutional articles and historical precedents to support your answer.",
+          "marks": 20
+        }
+      ]
     }
   ]
 }

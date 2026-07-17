@@ -1,9 +1,13 @@
 -- FairScribe Database Schema
--- Phase 1–2: Authentication + Question Paper Rendering
+-- Phase 1–3 (partial): Authentication + Question Paper Rendering + Answer Status
 --
 -- All tables use CREATE TABLE IF NOT EXISTS so this file can be
 -- applied idempotently (re-run safely on existing databases).
 -- Migrations are applied by electron/db/db.ts at app startup.
+--
+-- NOTE: The authoritative schema for runtime use is the SCHEMA_SQL constant
+-- inlined in electron/db/db.ts. This file is kept in sync for documentation
+-- purposes only.
 
 -- ============================================================
 -- Student
@@ -45,6 +49,11 @@ CREATE TABLE IF NOT EXISTS Exam (
 --
 -- This means any retroactive edit to a past entry breaks the chain
 -- and is detectable via verifyAuditChain() in electron/db/db.ts.
+--
+-- Phase 3 adds these new eventType values (no schema change needed):
+--   instructions_acknowledged
+--   section_changed
+--   question_status_changed  (deviceState: { questionId, fromStatus, toStatus })
 -- ============================================================
 CREATE TABLE IF NOT EXISTS AuditLog (
   id                     INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,20 +65,41 @@ CREATE TABLE IF NOT EXISTS AuditLog (
 );
 
 -- ============================================================
--- TODO (Phase 3): Answer table
---
--- Will store per-question answer state for each candidate.
--- Planned schema (do not create yet — slot in without rework):
---
--- CREATE TABLE IF NOT EXISTS Answer (
---   answerId          TEXT PRIMARY KEY,       -- UUID
---   studentId         TEXT NOT NULL REFERENCES Student(studentId),
---   examId            TEXT NOT NULL REFERENCES Exam(examId),
---   questionId        TEXT NOT NULL,
---   currentText       TEXT NOT NULL DEFAULT '',
---   dictationSegments TEXT NOT NULL DEFAULT '[]',  -- JSON array of {segmentId, voskRaw, whisperVerification, timestamp}
---   editHistory       TEXT NOT NULL DEFAULT '[]',  -- JSON array of {action, payload, timestamp, checksum}
---   lastSaved         TEXT,                        -- ISO 8601, updated on every autosave
---   UNIQUE(studentId, questionId)
--- );
+-- Section (Phase 3 — partial)
+-- Maps sections from sample-exam.json into the database.
+-- Populated at question paper load time.
 -- ============================================================
+CREATE TABLE IF NOT EXISTS Section (
+  sectionId    TEXT PRIMARY KEY,
+  examId       TEXT NOT NULL,
+  sectionName  TEXT NOT NULL,
+  sectionOrder INTEGER NOT NULL,
+  FOREIGN KEY (examId) REFERENCES Exam(examId)
+);
+
+-- ============================================================
+-- Answer (Phase 3 — partial)
+-- Tracks per-question answer state for each candidate.
+--
+-- Initialized with status='not_visited' for all questions when the
+-- candidate acknowledges the Instructions screen.
+--
+-- Status lifecycle:
+--   not_visited            → initial state (before candidate opens question)
+--   not_answered           → question opened but no answer dictated
+--   answered               → candidate clicked "Save & Next" with answer content
+--   marked_for_review      → flagged for review, no answer content
+--   answered_marked_for_review → flagged for review WITH answer content
+--
+-- answerText is always '' in Phase 3 (partial). Real dictation text
+-- will populate this field when Phase 3 (dictation engine) is implemented.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS Answer (
+  questionId      TEXT NOT NULL,
+  studentId       TEXT NOT NULL,
+  answerText      TEXT NOT NULL DEFAULT '',
+  status          TEXT NOT NULL DEFAULT 'not_visited',
+  visitedAt       TEXT,                            -- ISO 8601, set when first opened
+  lastModifiedAt  TEXT,                            -- ISO 8601, updated on every status change
+  PRIMARY KEY (questionId, studentId)
+);

@@ -1,16 +1,104 @@
 /* Submit.module.css — Light mode, government exam aesthetic */
 
-/* ─── Nav bar layout (wraps QuestionNav + Submit button) ─── */
+/* ─── Nav bar layout (wraps action buttons) ─── */
 .navBarInner {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   width: 100%;
+  flex-wrap: nowrap;
 }
 
-.navBarInner > :first-child {
+/* Flexible spacer pushes Submit to the far right */
+.navSpacer {
   flex: 1;
-  min-width: 0;
+}
+
+/* Thin vertical divider between Previous and Save & Next */
+.navDivider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+/* ─── Previous button (ghost/outlined) ─── */
+.prevBtn {
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.87rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.prevBtn:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.prevBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ─── Save & Next button ─── */
+.saveNextBtn {
+  padding: 9px 18px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary-hover);
+  color: #fff;
+  font-size: 0.87rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.saveNextBtn:hover {
+  background: var(--color-primary-hover);
+}
+
+.saveNextBtn:active {
+  background: #0f3d80;
+}
+
+/* ─── Mark for Review & Next button ─── */
+.markReviewBtn {
+  padding: 9px 18px;
+  background: #7b3fa0;
+  border: 1px solid #632f82;
+  color: #fff;
+  font-size: 0.87rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.markReviewBtn:hover {
+  background: #632f82;
+}
+
+.markReviewBtn:active {
+  background: #4e2466;
+}
+
+/* Spacer to push submit button to the right */
+.navBarInner > .submitBtn {
+  margin-left: auto;
 }
 
 /* ─── Submit button ─── */

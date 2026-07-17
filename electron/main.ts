@@ -11,6 +11,9 @@ import {
   updateExamHash,
   insertAuditLog,
   verifyAuditChain,
+  initAnswers,
+  upsertAnswerStatus,
+  getAnswerStatuses,
 } from './db/db';
 
 // ---------------------------------------------------------------------------
@@ -360,6 +363,42 @@ ipcMain.handle(
       submittedAt: new Date().toISOString(),
       ...details,
     });
+  }
+);
+
+/**
+ * exam:initAnswers — bulk-insert Answer rows with status='not_visited'.
+ * Called once when the candidate acknowledges the Instructions screen.
+ * Uses INSERT OR IGNORE so crash-recovery re-runs are safe.
+ */
+ipcMain.handle(
+  'exam:initAnswers',
+  (_event, questionIds: string[], studentId: string) => {
+    initAnswers(questionIds, studentId);
+  }
+);
+
+/**
+ * exam:updateAnswerStatus — persist a single question's status change.
+ * Called on every Save & Next / Mark for Review action — never batched.
+ * Writes immediately so a crash cannot lose palette state.
+ */
+ipcMain.handle(
+  'exam:updateAnswerStatus',
+  (_event, questionId: string, studentId: string, status: string, answerText: string) => {
+    upsertAnswerStatus(questionId, studentId, status, answerText);
+  }
+);
+
+/**
+ * exam:getAnswerStatuses — return all Answer rows for a student.
+ * Used to rehydrate the in-memory status map from the DB (e.g. after a
+ * renderer reload or future crash-recovery flow).
+ */
+ipcMain.handle(
+  'exam:getAnswerStatuses',
+  (_event, studentId: string) => {
+    return getAnswerStatuses(studentId);
   }
 );
 

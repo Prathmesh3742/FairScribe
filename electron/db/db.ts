@@ -1,7 +1,7 @@
 // sql.js uses `export =` (CommonJS-style). With esModuleInterop enabled,
 // ts-node resolves this correctly as a default import.
 import initSqlJs = require('sql.js');
-import type { Database, BindParams, SqlValue } from 'sql.js';
+import type { Database, SqlValue } from 'sql.js';
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -39,6 +39,16 @@ export interface AuditLogEntry {
   invigOverride: number;
 }
 
+/** One row from the Answer table as returned from the DB. */
+export interface AnswerStatusRow {
+  questionId: string;
+  studentId: string;
+  answerText: string;
+  status: string;
+  visitedAt: string | null;
+  lastModifiedAt: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Inline schema
 // Inlined rather than read from schema.sql at runtime to avoid path-resolution
@@ -74,6 +84,33 @@ CREATE TABLE IF NOT EXISTS AuditLog (
   deviceState            TEXT,
   invigOverride          INTEGER DEFAULT 0
 );
+
+-- Phase 3 (partial): Section table.
+-- Populated from the sections[] array in sample-exam.json at load time.
+CREATE TABLE IF NOT EXISTS Section (
+  sectionId    TEXT PRIMARY KEY,
+  examId       TEXT NOT NULL,
+  sectionName  TEXT NOT NULL,
+  sectionOrder INTEGER NOT NULL,
+  FOREIGN KEY (examId) REFERENCES Exam(examId)
+);
+
+-- Phase 3 (partial): Answer table.
+-- Initialized with status='not_visited' for every question at instructions_acknowledged.
+-- status values: not_visited | not_answered | answered |
+--                marked_for_review | answered_marked_for_review
+--
+-- answerText is always '' until Phase 3 (real dictation) is implemented.
+-- The status tracking itself is fully functional now to support the palette.
+CREATE TABLE IF NOT EXISTS Answer (
+  questionId      TEXT NOT NULL,
+  studentId       TEXT NOT NULL,
+  answerText      TEXT NOT NULL DEFAULT '',
+  status          TEXT NOT NULL DEFAULT 'not_visited',
+  visitedAt       TEXT,
+  lastModifiedAt  TEXT,
+  PRIMARY KEY (questionId, studentId)
+);
 `;
 
 // ---------------------------------------------------------------------------
@@ -86,7 +123,7 @@ let _dbPath: string = '';
 /**
  * Initialises the sql.js WASM engine, opens (or creates) the database file,
  * and applies the schema. Must be awaited once in app.whenReady() before any
- * IPC handler calls getDb().
+ * IPC handler calls getDb().</p>
  *
  * sql.js keeps the database entirely in memory and flushes to disk via
  * persistDb() after every write. This is correct behaviour for a single-user
@@ -209,6 +246,76 @@ export function getExam(examId: string): Exam | null {
 
 export function updateExamHash(examId: string, hash: string): void {
   runQuery('UPDATE Exam SET questionPaperHash = ? WHERE examId = ?', [hash, examId]);
+}
+
+// ---------------------------------------------------------------------------
+// Answer queries (Phase 3 — partial)
+// ---------------------------------------------------------------------------
+
+/**
+ * Bulk-inserts Answer rows with status='not_visited' for every question in the
+ * exam. Called once when the candidate acknowledges the instructions screen.
+ *
+ * Uses INSERT OR IGNORE so re-running (e.g. after a crash-recovery) is safe
+ * and does not overwrite any already-updated statuses.
+ */
+export function initAnswers(questionIds: string[], studentId: string): void {
+  const now = new Date().toISOString();
+  const db = getDb();
+  // Run all inserts inside a single transaction for performance
+  db.run('BEGIN TRANSACTION');
+  try {
+    for (const questionId of questionIds) {
+      db.run(
+        `INSERT OR IGNORE INTO Answer (questionId, studentId, answerText, status, visitedAt, lastModifiedAt)
+         VALUES (?, ?, '', 'not_visited', NULL, ?)`,
+        [questionId, studentId, now]
+      );
+    }
+    db.run('COMMIT');
+  } catch (err) {
+    db.run('ROLLBACK');
+    throw err;
+  }
+  persistDb();
+}
+
+/**
+ * Updates the status (and optionally answerText) for a single question.
+ * Called on every Save/Mark-for-Review action — never batched.
+ *
+ * @param questionId  The question being updated
+ * @param studentId   The current student
+ * @param status      One of the 5 valid status values
+ * @param answerText  Current stub answer text ('' until Phase 3 dictation lands)
+ */
+export function upsertAnswerStatus(
+  questionId: string,
+  studentId: string,
+  status: string,
+  answerText: string
+): void {
+  const now = new Date().toISOString();
+  runQuery(
+    `INSERT INTO Answer (questionId, studentId, answerText, status, visitedAt, lastModifiedAt)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(questionId, studentId) DO UPDATE SET
+       status         = excluded.status,
+       answerText     = excluded.answerText,
+       lastModifiedAt = excluded.lastModifiedAt`,
+    [questionId, studentId, answerText, status, now, now]
+  );
+}
+
+/**
+ * Returns all Answer rows for a given student.
+ * Used to rehydrate the in-memory status map from the DB.
+ */
+export function getAnswerStatuses(studentId: string): AnswerStatusRow[] {
+  return queryAll<AnswerStatusRow>(
+    'SELECT * FROM Answer WHERE studentId = ?',
+    [studentId]
+  );
 }
 
 // ---------------------------------------------------------------------------

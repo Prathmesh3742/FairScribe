@@ -1,4 +1,4 @@
-/* QuestionPaper.module.css — Light mode, government exam aesthetic */
+/* QuestionPaper.module.css — Phase 3: two-panel exam layout */
 
 /* ─── Root layout ─── */
 .root {
@@ -53,11 +53,20 @@
   flex-shrink: 0;
 }
 
-/* ─── Main content ─── */
+/* ─── Main content: left panel + right palette panel ─── */
 .mainContent {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Left panel takes remaining space; palette is a fixed 240px column */
+  grid-template-columns: 1fr 240px;
   gap: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ─── Left panel: question + answer area ─── */
+.leftPanel {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   min-height: 0;
 }
@@ -66,11 +75,13 @@
 .questionPanel {
   display: flex;
   flex-direction: column;
-  padding: 28px 32px;
+  padding: 24px 28px;
   overflow-y: auto;
-  border-right: 1px solid var(--color-border);
-  gap: 16px;
+  border-right: 1px solid var(--color-border-subtle);
+  gap: 14px;
   background: var(--color-surface);
+  flex: 1;
+  min-height: 0;
 }
 
 .questionHeader {
@@ -79,8 +90,15 @@
   justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
-  padding-bottom: 14px;
+  padding-bottom: 12px;
   border-bottom: 2px solid var(--color-primary);
+}
+
+.questionMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .questionCounter {
@@ -88,6 +106,12 @@
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.02em;
+}
+
+.sectionBreadcrumb {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 .marksBadge {
@@ -105,16 +129,15 @@
 }
 
 .questionTextContainer {
-  /* Font scale applied inline via --question-font-scale custom property */
   flex: 1;
   min-height: 0;
 }
 
 .questionText {
-  font-size: 1em; /* inherits from container's font-size */
+  font-size: 1em;
   color: var(--color-text);
   line-height: 1.9;
-  user-select: text; /* Allow the candidate to read/follow text */
+  user-select: text;
 }
 
 /* ─── Answer editor placeholder ─── */
@@ -122,12 +145,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
-  background: var(--color-surface);
+  padding: 24px;
+  background: var(--color-surface-2);
   border: 2px dashed var(--color-border);
-  margin: 20px;
   border-radius: var(--radius-md);
-  align-self: center;
+  flex-shrink: 0;
 }
 
 .placeholderInner {
@@ -135,28 +157,75 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  max-width: 280px;
+  gap: 8px;
+  max-width: 260px;
 }
 
 .placeholderIcon {
-  font-size: 2.5rem;
-  opacity: 0.35;
+  font-size: 2rem;
+  opacity: 0.3;
 }
 
 .placeholderTitle {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }
 
 .placeholderDesc {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--color-text-muted);
   line-height: 1.5;
 }
 
-/* ─── Navigation bar ─── */
+/* ─── [DEV] stub answer toggle ─── */
+/* TODO (Phase 3 dictation): Remove this entire block when real dictation lands.
+   This is a temporary development-only control for testing palette status
+   transitions end-to-end before the Vosk/ASR engine is integrated. */
+.devAnswerToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fffbe5;
+  border: 1px dashed #d4a800;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.devToggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.devToggleCheckbox {
+  width: 14px;
+  height: 14px;
+  accent-color: #d4a800;
+  cursor: pointer;
+}
+
+.devToggleText {
+  font-size: 0.75rem;
+  color: #7a5500;
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+.devBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  background: #d4a800;
+  border-radius: 3px;
+  padding: 1px 5px;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Navigation bar (bottom) ─── */
 .navBar {
   padding: 10px 20px;
   background: var(--color-surface);
@@ -172,4 +241,40 @@
   height: 100%;
   color: var(--color-danger);
   font-size: 1rem;
+}
+
+/* ─── Submit modal status summary ─── */
+.submitSummary {
+  margin: 0 0 18px 0;
+  padding: 12px 14px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.submitSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.submitSummaryRow:last-child {
+  border-bottom: none;
+}
+
+.submitSummaryDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.submitSummaryCount {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-text);
 }

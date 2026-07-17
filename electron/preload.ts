@@ -57,17 +57,27 @@ contextBridge.exposeInMainWorld('fairscribe', {
     /**
      * Load the question paper JSON, compute + store its SHA-256 hash,
      * and write a question_paper_loaded AuditLog entry.
-     * Returns the parsed question paper data.
+     * Returns the parsed question paper data (sections + instructions).
      */
     loadQuestionPaper: (examId: string): Promise<{
       examId: string;
       examTitle: string;
       duration: number;
-      questions: Array<{
-        questionId: string;
-        questionText: string;
-        marks: number;
+      sections: Array<{
+        sectionId: string;
+        sectionName: string;
+        sectionOrder: number;
+        questions: Array<{
+          questionId: string;
+          questionText: string;
+          marks: number;
+        }>;
       }>;
+      instructions: {
+        general: string[];
+        examSpecific: string[];
+        markingScheme?: string;
+      };
       questionPaperHash: string;
     }> => ipcRenderer.invoke('exam:loadQuestionPaper', examId),
 
@@ -79,6 +89,44 @@ contextBridge.exposeInMainWorld('fairscribe', {
       examId: string,
       details: Record<string, unknown>
     ): Promise<void> => ipcRenderer.invoke('exam:submit', examId, details),
+
+    /**
+     * Bulk-initialize Answer rows for all questions with status='not_visited'.
+     * Called once when the candidate acknowledges the Instructions screen.
+     * Uses INSERT OR IGNORE — safe to call again after a crash.
+     */
+    initAnswers: (
+      questionIds: string[],
+      studentId: string
+    ): Promise<void> => ipcRenderer.invoke('exam:initAnswers', questionIds, studentId),
+
+    /**
+     * Persist a single question's status to the Answer table.
+     * Called immediately on every Save & Next / Mark for Review action.
+     * Never batched — crash-safe.
+     */
+    updateAnswerStatus: (
+      questionId: string,
+      studentId: string,
+      status: string,
+      answerText: string
+    ): Promise<void> =>
+      ipcRenderer.invoke('exam:updateAnswerStatus', questionId, studentId, status, answerText),
+
+    /**
+     * Return all Answer rows for a student from the DB.
+     * Used to rehydrate the in-memory status map (e.g. after a crash-recovery).
+     */
+    getAnswerStatuses: (
+      studentId: string
+    ): Promise<Array<{
+      questionId: string;
+      studentId: string;
+      answerText: string;
+      status: string;
+      visitedAt: string | null;
+      lastModifiedAt: string | null;
+    }>> => ipcRenderer.invoke('exam:getAnswerStatuses', studentId),
   },
 
   // -------------------------------------------------------------------------

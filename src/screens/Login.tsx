@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useExamSession } from '../state/examSession';
+import type { QuestionStatus } from '../types/fairscribe';
 import styles from '../styles/Login.module.css';
 
 interface Props {
@@ -14,15 +15,22 @@ interface Props {
  * and accessCode.
  *
  * On success:
- *   1. Session context is populated with student + exam data.
- *   2. kiosk:activate is called → main process switches window to
+ *   1. kiosk:activate is called → main process switches window to
  *      kiosk mode in-place (React state is preserved).
- *   3. exam:loadQuestionPaper is called to hash + cache the paper.
- *   4. onLoginSuccess() transitions the app to the exam screen.
+ *   2. exam:loadQuestionPaper is called to hash + cache the paper.
+ *   3. Session context is populated with student + exam data (Phase 3:
+ *      now includes sections[], instructions, and initial statusMap).
+ *   4. onLoginSuccess() transitions the app to the Instructions screen.
  *
  * On failure:
  *   - AuditLog entry is written by the main process (login_failure).
  *   - Inline error is shown. Retry is allowed (no lockout for prototype).
+ *
+ * Phase 3 change: sessions now carry sections[] + instructions from the
+ * question paper, and statusMap is initialized as all 'not_visited'.
+ * The actual Answer rows are inserted in the DB later (in Instructions.tsx)
+ * after the candidate acknowledges the instructions — so we only build the
+ * in-memory map here, not the DB rows.
  */
 export default function Login({ onLoginSuccess }: Props) {
   const { setSession } = useExamSession();
@@ -56,21 +64,39 @@ export default function Login({ onLoginSuccess }: Props) {
       // 1. Activate kiosk mode in-place (window reconfigures without restart)
       await window.fairscribe.kiosk.activate();
 
-      // 2. Load + hash the question paper
+      // 2. Load + hash the question paper (now returns sections + instructions)
       const paperData = await window.fairscribe.exam.loadQuestionPaper(result.exam.examId);
 
-      // 3. Populate session context (React state survives in-place kiosk switch)
+      // 3. Build the flat question list and initial status map.
+      //    All questions start as 'not_visited' in memory.
+      //    The Answer DB rows are inserted later (in Instructions.tsx) after
+      //    the candidate acknowledges the instructions screen.
+      const initialStatusMap = new Map<string, QuestionStatus>();
+      for (const section of paperData.sections) {
+        for (const question of section.questions) {
+          initialStatusMap.set(question.questionId, 'not_visited');
+        }
+      }
+
+      // First section and question as the starting navigation position
+      const firstSection = paperData.sections[0];
+      const firstQuestion = firstSection?.questions[0];
+
+      // 4. Populate session context (React state survives in-place kiosk switch)
       setSession({
         studentId: result.student.studentId,
         studentName: result.student.name,
         examId: result.exam.examId,
         examTitle: result.exam.examTitle,
         duration: result.exam.duration,
-        questions: paperData.questions,
-        currentQuestionIndex: 0,
+        sections: paperData.sections,
+        instructions: paperData.instructions,
+        currentSectionId: firstSection?.sectionId ?? '',
+        currentQuestionId: firstQuestion?.questionId ?? '',
+        statusMap: initialStatusMap,
       });
 
-      // 4. Transition to exam screen
+      // 5. Transition to Instructions screen
       onLoginSuccess();
     } catch {
       setError('A system error occurred. Please contact the invigilator.');
