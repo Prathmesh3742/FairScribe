@@ -26,47 +26,97 @@
   "sections": [
     {
       "sectionId": "SEC-1",
-      "sectionName": "General Awareness",
+      "sectionName": "Section A: General Awareness",
       "sectionOrder": 1,
       "questions": [
         {
           "questionId": "Q001",
-          "questionText": "India's biodiversity hotspots are regions of significant biological diversity that are threatened by human habitation. Identify any two biodiversity hotspots in India and explain the significance of each in terms of endemic species, ecological services they provide, and the primary conservation challenges they face. Your answer should draw on specific examples of flora and fauna found exclusively within each hotspot.",
-          "marks": 15
+          "questionText": "India's biodiversity hotspots are regions of significant biological diversity that are threatened by human habitation. Identify any two biodiversity hotspots in India and explain the significance of each.",
+          "marks": 10
         },
         {
           "questionId": "Q002",
-          "questionText": "The Right to Education Act, 2009, mandated free and compulsory education for children between the ages of 6 and 14. Critically examine the extent to which this act has achieved its intended objectives over the fifteen years since its enactment. In your analysis, consider both quantitative indicators such as enrolment and dropout rates, and qualitative dimensions such as learning outcomes and infrastructure quality, particularly in rural and tribal areas.",
-          "marks": 15
+          "questionText": "The Right to Education Act, 2009, mandated free and compulsory education for children. Critically examine the extent to which this act has achieved its intended objectives.",
+          "marks": 10
+        },
+        {
+          "questionId": "Q003",
+          "questionText": "Discuss the socio-economic impacts of digital literacy programs in rural India over the last decade.",
+          "marks": 10
+        },
+        {
+          "questionId": "Q004",
+          "questionText": "Evaluate the role of the Indian Space Research Organisation (ISRO) in promoting technological advancement and national security.",
+          "marks": 10
+        },
+        {
+          "questionId": "Q005",
+          "questionText": "Analyze the consequences of rapid urbanization on public health infrastructure in metropolitan cities.",
+          "marks": 10
         }
       ]
     },
     {
       "sectionId": "SEC-2",
-      "sectionName": "Essay Writing",
+      "sectionName": "Section B: Essay Writing",
       "sectionOrder": 2,
       "questions": [
         {
-          "questionId": "Q003",
-          "questionText": "The Green Revolution transformed Indian agriculture between the 1960s and 1980s, dramatically increasing food grain production and averting large-scale famine. However, it also generated a set of long-term agricultural, ecological, and socio-economic consequences that continue to shape Indian farming today. Evaluate both the achievements and the unintended consequences of the Green Revolution, and discuss how contemporary agricultural policy initiatives — such as the Soil Health Card scheme, Pradhan Mantri Fasal Bima Yojana, and the push toward natural farming — attempt to address its legacy challenges.",
+          "questionId": "Q006",
+          "questionText": "The Green Revolution transformed Indian agriculture but generated long-term ecological consequences. Evaluate both the achievements and the unintended consequences.",
           "marks": 20
         },
         {
-          "questionId": "Q004",
-          "questionText": "Examine the role of the Indian Ocean in shaping India's geopolitical strategy in the twenty-first century. Your answer should address: (a) the strategic importance of sea lanes of communication passing through the Indian Ocean Region; (b) India's Maritime Security Strategy and its relationship with the concept of SAGAR (Security and Growth for All in the Region); and (c) the significance of India's island territories — particularly the Andaman and Nicobar Islands — in projecting maritime power and ensuring regional stability.",
+          "questionId": "Q007",
+          "questionText": "Examine the role of the Indian Ocean in shaping India's geopolitical strategy in the twenty-first century.",
+          "marks": 20
+        },
+        {
+          "questionId": "Q008",
+          "questionText": "Write an essay on the importance of renewable energy transitions for sustainable economic growth in developing nations.",
+          "marks": 20
+        },
+        {
+          "questionId": "Q009",
+          "questionText": "Discuss the ethical implications of artificial intelligence in governance and public administration.",
+          "marks": 20
+        },
+        {
+          "questionId": "Q010",
+          "questionText": "Analyze the impact of global supply chain disruptions on local economies and strategies for building resilience.",
           "marks": 20
         }
       ]
     },
     {
       "sectionId": "SEC-3",
-      "sectionName": "Polity & Governance",
+      "sectionName": "Section C: Polity & Governance",
       "sectionOrder": 3,
       "questions": [
         {
-          "questionId": "Q005",
-          "questionText": "The Parliament of India is bicameral, comprising the Lok Sabha and the Rajya Sabha. Explain the constitutional provisions that distinguish the powers of these two houses, with particular reference to Money Bills under Article 110, the role of the Rajya Sabha in federal legislation, and the circumstances under which a joint sitting of both houses may be convened. Use relevant constitutional articles and historical precedents to support your answer.",
-          "marks": 20
+          "questionId": "Q011",
+          "questionText": "Explain the constitutional provisions that distinguish the powers of the Lok Sabha and the Rajya Sabha.",
+          "marks": 15
+        },
+        {
+          "questionId": "Q012",
+          "questionText": "Discuss the significance of the Anti-Defection Law (Tenth Schedule) in maintaining political stability.",
+          "marks": 15
+        },
+        {
+          "questionId": "Q013",
+          "questionText": "Evaluate the role of the Election Commission of India in ensuring free and fair elections.",
+          "marks": 15
+        },
+        {
+          "questionId": "Q014",
+          "questionText": "Analyze the functioning of Panchayati Raj Institutions (PRIs) in empowering local self-governance.",
+          "marks": 15
+        },
+        {
+          "questionId": "Q015",
+          "questionText": "Critically examine the concept of Judicial Review and its impact on the separation of powers in India.",
+          "marks": 15
         }
       ]
     }

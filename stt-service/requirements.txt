@@ -1,0 +1,32 @@
+# FairScribe STT Service — Pinned Dependencies
+# Install: pip install -r requirements.txt
+#
+# NOTE: All speech processing is OFFLINE. No cloud APIs.
+# No OpenAI, No Google Speech, No Azure Speech.
+
+# ── Web framework ──
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+websockets==14.1
+
+# ── Configuration ──
+pydantic==2.10.4
+pydantic-settings==2.7.1
+pyyaml==6.0.2
+
+# ── Speech Recognition (Offline) ──
+vosk==0.3.45
+
+# ── Speech Verification (Offline) ──
+faster-whisper==1.1.0
+
+# ── Voice Activity Detection ──
+# Silero VAD is loaded via torch.hub / ONNX
+onnxruntime==1.20.1
+
+# ── Audio Processing ──
+numpy==1.26.4
+soundfile==0.12.1
+
+# ── Utilities ──
+httpx==0.28.1

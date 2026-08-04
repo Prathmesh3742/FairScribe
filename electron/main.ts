@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, Menu, session } from 'electron';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -15,6 +15,36 @@ import {
   upsertAnswerStatus,
   getAnswerStatuses,
 } from './db/db';
+import * as sttBridge from './stt/stt-bridge';
+
+// ---------------------------------------------------------------------------
+// Process-level error handlers (prevent silent Electron crashes)
+// ---------------------------------------------------------------------------
+
+process.on('uncaughtException', (error) => {
+  console.error('[Main] Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Main] Unhandled promise rejection:', reason);
+});
+
+// ---------------------------------------------------------------------------
+// Chromium audio service crash fix (Windows)
+// ---------------------------------------------------------------------------
+// Electron 28's Chromium runs the audio service in a separate sandboxed
+// process (AudioServiceOutOfProcess + AudioServiceSandbox). On certain
+// Windows audio drivers, this sandboxed process crashes with 0xC0000005
+// (Access Violation) when getUserMedia + Web Audio API are used together.
+//
+// Disabling these features keeps the audio service in the browser process,
+// which avoids the driver-level crash. This is safe for a kiosk exam app
+// where the audio input is always a known local microphone.
+// ---------------------------------------------------------------------------
+app.commandLine.appendSwitch(
+  'disable-features',
+  'AudioServiceOutOfProcess,AudioServiceSandbox'
+);
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -66,6 +96,23 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // ── Renderer crash / error diagnostics ──
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error('[Main] Renderer process gone:', details.reason, details.exitCode);
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error('[Main] Page failed to load:', errorCode, errorDescription, validatedURL);
+  });
+
+  mainWindow.webContents.on('crashed', () => {
+    console.error('[Main] Renderer crashed!');
+  });
+
+  mainWindow.webContents.on('unresponsive', () => {
+    console.error('[Main] Renderer unresponsive!');
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -462,10 +509,115 @@ ipcMain.handle('kiosk:quit', () => {
 });
 
 // ---------------------------------------------------------------------------
+// STT (Speech-to-Text) IPC Handlers — Phase 3
+// ---------------------------------------------------------------------------
+
+/** stt:healthCheck — verify the Python STT service is running */
+ipcMain.handle('stt:healthCheck', async () => {
+  try {
+    return await sttBridge.checkHealth();
+  } catch (err: any) {
+    return { status: 'unavailable', error: err.message };
+  }
+});
+
+/** stt:startSession — create a session + open WebSocket stream */
+ipcMain.handle(
+  'stt:startSession',
+  async (_event, config: { studentId: string; examId: string; questionId: string; language?: string }) => {
+    try {
+      const sttSession = await sttBridge.createSession(config);
+      // Open WebSocket for real-time audio streaming
+      sttBridge.openStream(sttSession.session_id, mainWindow);
+      return { sessionId: sttSession.session_id };
+    } catch (err: any) {
+      console.error('[Main] stt:startSession failed:', err.message);
+      throw err; // Re-throw so the renderer's try/catch receives the error
+    }
+  }
+);
+
+/** stt:sendAudio — forward a raw PCM audio chunk to the Python WebSocket */
+ipcMain.handle(
+  'stt:sendAudio',
+  (_event, sessionId: string, chunk: ArrayBuffer) => {
+    sttBridge.sendAudio(sessionId, Buffer.from(chunk));
+  }
+);
+
+/** stt:stopRecording — close WebSocket + trigger Whisper verification */
+ipcMain.handle(
+  'stt:stopRecording',
+  async (_event, sessionId: string) => {
+    try {
+      const result = await sttBridge.stopRecording(sessionId);
+      return {
+        sessionId: result.session_id,
+        voskTranscript: result.vosk_transcript,
+        whisperTranscript: result.whisper_transcript,
+        finalTranscript: result.final_transcript,
+        whisperAvailable: result.whisper_available,
+        whisperConfidence: result.whisper_confidence,
+        audioDurationSeconds: result.audio_duration_seconds,
+        processingTimeSeconds: result.processing_time_seconds,
+        status: result.status,
+      };
+    } catch (err: any) {
+      console.error('[Main] stt:stopRecording failed:', err.message);
+      throw err;
+    }
+  }
+);
+
+/** stt:deleteSession — clean up a session on the Python service */
+ipcMain.handle(
+  'stt:deleteSession',
+  async (_event, sessionId: string) => {
+    await sttBridge.deleteSession(sessionId);
+  }
+);
+
+// ---------------------------------------------------------------------------
 // App lifecycle
 // ---------------------------------------------------------------------------
 
 app.whenReady().then(async () => {
+  // ── Auto-grant microphone permission ──
+  // Without these handlers, Electron shows system permission / device-selection
+  // dialogs that get stuck behind the kiosk-mode fullscreen window, causing a
+  // blank/white screen freeze. The exam app requires microphone access for
+  // speech-to-text dictation, so we auto-grant audio-related permissions.
+
+  // 1. Permission request handler — intercepts getUserMedia() permission prompts
+  session.defaultSession.setPermissionRequestHandler(
+    (_webContents, permission, callback, details) => {
+      const allowed = ['media', 'audioCapture', 'microphone'];
+      const granted = allowed.includes(permission);
+      console.log(`[Main] Permission request: ${permission} → ${granted ? 'GRANTED' : 'DENIED'}`,
+        details?.mediaTypes || '');
+      callback(granted);
+    }
+  );
+
+  // 2. Permission check handler (Electron 28+) — synchronous permission queries
+  session.defaultSession.setPermissionCheckHandler(
+    (_webContents, permission) => {
+      const allowed = ['media', 'audioCapture', 'microphone'];
+      return allowed.includes(permission);
+    }
+  );
+
+  // 3. Device permission handler (Electron 28+) — auto-grant access to audio
+  //    input devices. Without this, Electron may show an OS-level device
+  //    selection dialog that gets trapped behind the kiosk fullscreen window,
+  //    producing the blank/white screen the user sees.
+  session.defaultSession.setDevicePermissionHandler((details) => {
+    // Grant access to all device types the renderer requests.
+    // In this exam app, the only device accessed is the microphone.
+    console.log(`[Main] Device permission: type=${details.deviceType} → GRANTED`);
+    return true;
+  });
+
   // Initialise the sql.js WASM engine and open/create the database.
   // Must complete before the window loads, so IPC handlers can use the DB
   // from the first renderer message.
@@ -487,4 +639,5 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  sttBridge.closeAll();
 });

@@ -175,4 +175,62 @@ contextBridge.exposeInMainWorld('fairscribe', {
      */
     quit: (): Promise<void> => ipcRenderer.invoke('kiosk:quit'),
   },
+
+  // -------------------------------------------------------------------------
+  // stt namespace — Phase 3: Speech-to-Text service bridge
+  // -------------------------------------------------------------------------
+  stt: {
+    /**
+     * Check if the Python STT service is running.
+     * Returns health status including engine availability.
+     */
+    healthCheck: (): Promise<any> =>
+      ipcRenderer.invoke('stt:healthCheck'),
+
+    /**
+     * Create an STT session for the current question.
+     * Also opens a WebSocket stream in the main process.
+     */
+    startSession: (config: {
+      studentId: string;
+      examId: string;
+      questionId: string;
+      language?: string;
+    }): Promise<{ sessionId: string }> =>
+      ipcRenderer.invoke('stt:startSession', config),
+
+    /**
+     * Send a raw PCM audio chunk to the STT service.
+     * The chunk is forwarded from the renderer to main to the Python WebSocket.
+     */
+    sendAudio: (sessionId: string, chunk: ArrayBuffer): Promise<void> =>
+      ipcRenderer.invoke('stt:sendAudio', sessionId, chunk),
+
+    /**
+     * Stop recording and trigger Whisper verification.
+     * Returns the verified transcript.
+     */
+    stopRecording: (sessionId: string): Promise<any> =>
+      ipcRenderer.invoke('stt:stopRecording', sessionId),
+
+    /**
+     * Delete an STT session and free resources.
+     */
+    deleteSession: (sessionId: string): Promise<void> =>
+      ipcRenderer.invoke('stt:deleteSession', sessionId),
+
+    /**
+     * Register a callback for real-time transcript events pushed
+     * from the main process (via WebSocket → main → renderer).
+     *
+     * Returns an unsubscribe function.
+     */
+    onTranscript: (callback: (data: any) => void): (() => void) => {
+      const handler = (_event: any, data: any) => callback(data);
+      ipcRenderer.on('stt:transcript', handler);
+      return () => {
+        ipcRenderer.removeListener('stt:transcript', handler);
+      };
+    },
+  },
 });

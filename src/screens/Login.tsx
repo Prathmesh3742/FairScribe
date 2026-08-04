@@ -94,6 +94,7 @@ export default function Login({ onLoginSuccess }: Props) {
         currentSectionId: firstSection?.sectionId ?? '',
         currentQuestionId: firstQuestion?.questionId ?? '',
         statusMap: initialStatusMap,
+        answerTextMap: new Map(),
       });
 
       // 5. Transition to Instructions screen

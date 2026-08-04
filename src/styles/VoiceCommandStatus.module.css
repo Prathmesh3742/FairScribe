@@ -1,0 +1,262 @@
+/* VoiceCommandStatus.module.css — Voice command status bar styling
+ *
+ * Uses the existing FairScribe design system from global.css.
+ * Supports high contrast mode via [data-theme="high-contrast"].
+ */
+
+/* ─── Status bar container ─── */
+.voiceStatusBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+
+/* ─── Mode indicator pill ─── */
+.modePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  user-select: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.modeCommandListening {
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  border: 1px solid rgba(26, 95, 180, 0.25);
+}
+
+.modeDictationRecording {
+  background: rgba(192, 28, 40, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(192, 28, 40, 0.3);
+  animation: voicePulse 1.5s ease-in-out infinite;
+}
+
+.modeDictationPaused {
+  background: var(--color-warning-dim);
+  color: var(--color-warning);
+  border: 1px solid rgba(154, 103, 0, 0.3);
+}
+
+.modeProcessing {
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  border: 1px solid rgba(26, 95, 180, 0.3);
+}
+
+.modeConfirming {
+  background: var(--color-warning-dim);
+  color: var(--color-warning);
+  border: 1px solid rgba(154, 103, 0, 0.4);
+  animation: voicePulse 1s ease-in-out infinite;
+}
+
+.modeIdle {
+  background: var(--color-surface-3);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.modeSubmitted {
+  background: var(--color-success-dim);
+  color: var(--color-success);
+  border: 1px solid rgba(45, 124, 63, 0.3);
+}
+
+/* ─── Mode dot (animated for recording) ─── */
+.modeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.modeDictationRecording .modeDot {
+  animation: voiceBlink 1s ease-in-out infinite;
+}
+
+/* ─── Microphone icon ─── */
+.micIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.micActive {
+  background: var(--color-success-dim);
+  color: var(--color-success);
+}
+
+/* Distinct state: active recording — red pulse ring */
+.micRecording {
+  background: rgba(192, 28, 40, 0.12);
+  color: var(--color-danger);
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+
+/* Distinct state: dictation paused — amber */
+.micPaused {
+  background: var(--color-warning-dim);
+  color: var(--color-warning);
+}
+
+.micInactive {
+  background: var(--color-surface-3);
+  color: var(--color-text-muted);
+}
+
+.micError {
+  background: var(--color-danger-dim);
+  color: var(--color-danger);
+}
+
+/* ─── Processing spinner ─── */
+.processingSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ─── Last command feedback ─── */
+.lastCommand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: var(--color-success-dim);
+  border: 1px solid rgba(45, 124, 63, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-success);
+  animation: commandFlash 0.3s ease-out;
+  flex-shrink: 0;
+}
+
+.lastCommandIcon {
+  font-size: 0.7rem;
+}
+
+/* ─── Command suggestions ─── */
+.suggestions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.suggestionsLabel {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.suggestionChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ─── Error banner ─── */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--color-danger-dim);
+  border: 1px solid rgba(192, 28, 40, 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  width: 100%;
+  margin-top: 4px;
+}
+
+.errorBanner button {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ─── Spacer ─── */
+.spacer {
+  flex: 1;
+}
+
+/* ─── Animations ─── */
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes voiceBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+@keyframes commandFlash {
+  0% { transform: scale(0.92); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes micPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(192, 28, 40, 0.3); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(192, 28, 40, 0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── High Contrast overrides ─── */
+[data-theme="high-contrast"] .modePill {
+  border-width: 2px;
+}
+
+[data-theme="high-contrast"] .suggestionChip {
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
