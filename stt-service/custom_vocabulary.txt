@@ -1,0 +1,58 @@
+# FairScribe Custom Vocabulary
+#
+# Add technical terms, academic words, and institution-specific abbreviations here.
+# One word or phrase per line. These words will be injected into the STT engine
+# to significantly improve recognition accuracy for domain-specific language.
+
+# Mathematics & Physics
+Pythagoras
+calculus
+trigonometry
+algebraic
+polynomial
+thermodynamics
+kinematics
+electromagnetism
+quantum mechanics
+
+# Chemistry & Biology
+stoichiometry
+photosynthesis
+mitochondria
+chromosome
+covalent
+ionic
+molecule
+catalyst
+enzyme
+nucleotide
+
+# Computer Science & Engineering
+algorithm
+Boolean
+polymorphism
+asynchronous
+cryptography
+middleware
+API
+JSON
+HTTP
+microservice
+
+# Academic / General
+hypothesis
+methodology
+qualitative
+quantitative
+bibliography
+synthesis
+analysis
+evaluate
+critique
+
+# Institution Specific (Examples)
+FairScribe
+matriculation
+semester
+invigilator
+proctor

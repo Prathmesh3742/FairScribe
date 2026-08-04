@@ -1,0 +1,338 @@
+/* Dictation.module.css — Phase 3: Dictation panel styling
+ *
+ * Uses the existing design system from global.css:
+ *   - CSS custom properties (--color-*, --radius-*, --shadow-*, --font-*)
+ *   - Government-blue primary, institutional aesthetic
+ *   - High contrast mode via [data-theme="high-contrast"] override
+ *   - Font scaling via --question-font-scale
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 200px;
+  margin-top: 4px;
+}
+
+/* ─── Controls bar ─── */
+.controlsBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+/* ─── Status indicator ─── */
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.statusIdle {
+  background: var(--color-surface-3);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.statusRecording {
+  background: rgba(192, 28, 40, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(192, 28, 40, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.statusPaused {
+  background: var(--color-warning-dim);
+  color: var(--color-warning);
+  border: 1px solid rgba(154, 103, 0, 0.3);
+}
+
+.statusProcessing {
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  border: 1px solid rgba(26, 95, 180, 0.3);
+}
+
+.statusError {
+  background: var(--color-danger-dim);
+  color: var(--color-danger);
+  border: 1px solid rgba(192, 28, 40, 0.3);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.statusRecording .statusDot {
+  animation: blink 1s ease-in-out infinite;
+}
+
+/* ─── Recording control buttons ─── */
+.controlBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    opacity var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.controlBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btnRecord {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: rgba(192, 28, 40, 0.4);
+}
+
+.btnRecord:hover:not(:disabled) {
+  background: #a61b25;
+}
+
+.btnPause {
+  background: var(--color-warning);
+  color: #fff;
+  border-color: rgba(154, 103, 0, 0.4);
+}
+
+.btnPause:hover:not(:disabled) {
+  background: #7d5200;
+}
+
+.btnResume {
+  background: var(--color-success);
+  color: #fff;
+  border-color: rgba(45, 124, 63, 0.4);
+}
+
+.btnResume:hover:not(:disabled) {
+  background: #1e5e2d;
+}
+
+.btnStop {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.btnStop:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btnClear {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: transparent;
+  padding: 6px 10px;
+}
+
+.btnClear:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: var(--color-danger-dim);
+}
+
+/* ─── Controls spacer ─── */
+.controlsSpacer {
+  flex: 1;
+}
+
+/* ─── Word count ─── */
+.wordCount {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── STT backend status dot ─── */
+.backendStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.backendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.backendOnline {
+  background: var(--color-success);
+}
+
+.backendOffline {
+  background: var(--color-danger);
+}
+
+/* ─── Transcript area ─── */
+.transcriptArea {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: calc(0.92em * var(--question-font-scale, 1));
+  line-height: 1.8;
+  color: var(--color-text);
+  user-select: text;
+  cursor: text;
+  white-space: pre-wrap;
+
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.transcriptArea:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.transcriptRecording {
+  border-color: rgba(192, 28, 40, 0.4);
+  box-shadow: 0 0 0 2px rgba(192, 28, 40, 0.08);
+}
+
+.transcriptPaused {
+  border-color: rgba(154, 103, 0, 0.35);
+  box-shadow: 0 0 0 2px rgba(154, 103, 0, 0.06);
+}
+
+/* ─── Processing indicator (self-positioned) ─── */
+.processingIndicator {
+  align-self: center;
+  margin-top: 2px;
+}
+
+/* Completed/final text */
+.finalText {
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
+/* Live partial text (interim — still being processed) */
+.partialText {
+  color: var(--color-text-muted);
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 1.5rem;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* ─── Error banner ─── */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-danger-dim);
+  border: 1px solid rgba(192, 28, 40, 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--color-danger);
+}
+
+.errorBanner button {
+  margin-left: auto;
+  padding: 3px 10px;
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ─── Audio level meter ─── */
+.levelMeter {
+  width: 60px;
+  height: 6px;
+  background: var(--color-surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.levelBar {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 3px;
+  transition: width 80ms linear;
+  min-width: 0;
+}
+
+.levelBarActive {
+  background: var(--color-danger);
+}
+
+/* ─── Animations ─── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}

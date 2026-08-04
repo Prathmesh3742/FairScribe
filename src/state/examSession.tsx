@@ -57,6 +57,12 @@ export interface ExamSession {
    * via exam:updateAnswerStatus IPC on every change.
    */
   statusMap: Map<string, QuestionStatus>;
+  /**
+   * In-memory map of questionId → answer text (Phase 3 dictation).
+   * Tracks the latest dictated/edited answer text for each question.
+   * Persisted to the Answer table's answerText column via IPC.
+   */
+  answerTextMap: Map<string, string>;
 }
 
 interface ExamSessionContextValue {
@@ -69,6 +75,11 @@ interface ExamSessionContextValue {
    * The caller is responsible for also persisting to the DB via IPC.
    */
   updateQuestionStatus: (questionId: string, status: QuestionStatus) => void;
+  /**
+   * Update the answer text for a specific question in the in-memory map.
+   * Used by DictationPanel when transcript text changes.
+   */
+  updateAnswerText: (questionId: string, text: string) => void;
   /** Derived status counts, recomputed whenever statusMap changes. */
   statusSummary: StatusSummary;
 }
@@ -171,9 +182,25 @@ export function ExamSessionProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  /**
+   * Update the answer text for a single question.
+   * Creates a new Map instance so React detects the reference change.
+   */
+  const updateAnswerText = useCallback(
+    (questionId: string, text: string) => {
+      setSessionState((prev) => {
+        if (!prev) return prev;
+        const newMap = new Map(prev.answerTextMap);
+        newMap.set(questionId, text);
+        return { ...prev, answerTextMap: newMap };
+      });
+    },
+    []
+  );
+
   return (
     <ExamSessionContext.Provider
-      value={{ session, setSession, setCurrentQuestion, updateQuestionStatus, statusSummary }}
+      value={{ session, setSession, setCurrentQuestion, updateQuestionStatus, updateAnswerText, statusSummary }}
     >
       {children}
     </ExamSessionContext.Provider>

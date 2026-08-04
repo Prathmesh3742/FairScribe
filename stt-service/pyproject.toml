@@ -1,0 +1,25 @@
+[project]
+name = "fairscribe-stt-service"
+version = "0.1.0"
+description = "Offline Speech-to-Text backend service for FairScribe examination terminal"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "FairScribe Team"}
+]
+keywords = ["speech-to-text", "offline", "vosk", "whisper", "exam"]
+
+[project.scripts]
+fairscribe-stt = "stt_service.app:main"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["stt_service*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

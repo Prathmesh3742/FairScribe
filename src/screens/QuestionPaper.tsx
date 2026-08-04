@@ -1,9 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useExamSession } from '../state/examSession';
-import type { QuestionStatus } from '../types/fairscribe';
+import { useActionHistory } from '../state/useActionHistory';
+import type { QuestionStatus, DictationStatus } from '../types/fairscribe';
 import QuestionPalette from '../components/QuestionPalette';
 import Timer from '../components/Timer';
 import AccessibilityControls from '../components/AccessibilityControls';
+import DictationPanel from '../components/DictationPanel';
+import type { DictationPanelHandle } from '../components/DictationPanel';
+import VoiceCommandStatus from '../components/VoiceCommandStatus';
+import VoiceCommandReference from '../components/VoiceCommandReference';
+import { useVoiceCommandEngine } from '../voice/useVoiceCommandEngine';
+import { getCommandsByCategory } from '../voice/commandMatcher';
+import * as tts from '../voice/ttsService';
 import styles from '../styles/QuestionPaper.module.css';
 import submitStyles from '../styles/Submit.module.css';
 
@@ -113,7 +121,7 @@ function prevQuestion(
 // ---------------------------------------------------------------------------
 
 export default function QuestionPaper() {
-  const { session, setCurrentQuestion, updateQuestionStatus, statusSummary } =
+  const { session, setCurrentQuestion, updateQuestionStatus, updateAnswerText, statusSummary } =
     useExamSession();
 
   // Accessibility state
@@ -126,18 +134,17 @@ export default function QuestionPaper() {
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(10);
 
-  // ---------------------------------------------------------------------------
-  // [DEV] Temporary stub answer toggle — Phase 3 dictation placeholder
-  //
-  // TODO (Phase 3 dictation): REMOVE this state and the toggle UI when the
-  // real Vosk/ASR dictation engine is integrated. Replace with actual
-  // answerText derived from the Slate.js editor content.
-  //
-  // This is ONLY here so the palette status transitions (answered / not_answered
-  // / marked_for_review / answered_marked_for_review) are demonstrable
-  // end-to-end while the dictation engine is not yet built.
-  // ---------------------------------------------------------------------------
-  const [devHasAnswer, setDevHasAnswer] = useState<Record<string, boolean>>({});
+  // Voice engine error state (separate from voice hook for dismiss control)
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
+  // Voice Command Reference modal state
+  const [showCommandRef, setShowCommandRef] = useState(false);
+
+  // DictationPanel imperative ref — voice commands drive recording through this
+  const dictationRef = useRef<DictationPanelHandle>(null);
+
+  // Application-level action history (navigation, mark, clear, etc.)
+  const actionHistory = useActionHistory();
 
   // ---------------------------------------------------------------------------
   // Error guard
@@ -158,6 +165,7 @@ export default function QuestionPaper() {
     studentId,
     duration,
     examId,
+    answerTextMap,
   } = session;
 
   // ---------------------------------------------------------------------------
@@ -180,8 +188,303 @@ export default function QuestionPaper() {
     }
   }
 
-  // Whether the [DEV] stub considers this question "answered"
-  const stubHasContent = devHasAnswer[currentQuestion?.questionId ?? ''] ?? false;
+  // Whether the current question has answer text (from dictation)
+  const currentAnswerText = answerTextMap?.get(currentQuestion?.questionId ?? '') ?? '';
+  const hasAnswerContent = currentAnswerText.trim().length > 0;
+
+  // ---------------------------------------------------------------------------
+  // Voice Command Engine Integration
+  // ---------------------------------------------------------------------------
+
+  const voiceState = useVoiceCommandEngine({
+    actions: {
+      startRecording: async () => {
+        if (dictationRef.current) {
+          await dictationRef.current.startRecording();
+        }
+      },
+      stopRecording: async () => {
+        if (dictationRef.current) {
+          await dictationRef.current.stopRecording();
+        }
+      },
+      pauseRecording: async () => {
+        if (dictationRef.current) {
+          await dictationRef.current.pauseRecording();
+        }
+      },
+      resumeRecording: async () => {
+        if (dictationRef.current) {
+          await dictationRef.current.resumeRecording();
+        }
+      },
+      nextQuestion: async () => {
+        // Auto-stop recording if active
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        await handleSaveAndNext();
+      },
+      previousQuestion: async () => {
+        // Auto-stop recording if active
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        await handlePrevious();
+      },
+      nextSection: async () => {
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        await handleNextSection();
+      },
+      previousSection: async () => {
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        await handlePreviousSection();
+      },
+      gotoQuestion: async (questionNumber: number) => {
+        // Auto-stop recording if active
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        // Find the question by global 1-based index
+        let idx = 1;
+        const prevQId = currentQuestion?.questionId;
+        const prevSecId = currentSectionId;
+        let foundQId: string | null = null;
+        let foundSecId: string | null = null;
+        for (const section of sections) {
+          for (const q of section.questions) {
+            if (idx === questionNumber) {
+              foundQId = q.questionId;
+              foundSecId = section.sectionId;
+              break;
+            }
+            idx++;
+          }
+          if (foundQId) break;
+        }
+        if (foundQId && foundSecId) {
+          actionHistory.pushAction({
+            type: 'navigation',
+            description: `Go to Question ${questionNumber}`,
+            undo: async () => {
+              if (prevQId && prevSecId) await openQuestion(prevQId, prevSecId);
+            },
+            redo: async () => {
+              if (foundQId && foundSecId) await openQuestion(foundQId, foundSecId);
+            },
+          });
+          await openQuestion(foundQId, foundSecId);
+        } else {
+          tts.announce(`Question ${questionNumber} not found.`);
+        }
+      },
+      gotoSection: async (sectionNumber: number) => {
+        // Auto-stop recording if active
+        if (dictationRef.current) {
+          const dictStatus = dictationRef.current.getStatus();
+          if (dictStatus === 'recording' || dictStatus === 'paused') {
+            await dictationRef.current.stopRecording();
+          }
+        }
+        // Autosave current answer before navigating
+        if (currentQuestion) {
+          const text = dictationRef.current?.getText() ?? answerTextMap?.get(currentQuestion.questionId) ?? '';
+          const newStatus: QuestionStatus = text.trim().length > 0 ? 'answered' : 'not_answered';
+          await window.fairscribe.exam.updateAnswerStatus(
+            currentQuestion.questionId, studentId, newStatus, text
+          );
+          updateQuestionStatus(currentQuestion.questionId, newStatus);
+        }
+        // Find section by 1-based index
+        const targetSection = sections[sectionNumber - 1];
+        if (targetSection && targetSection.questions.length > 0) {
+          const prevQId = currentQuestion?.questionId;
+          const prevSecId = currentSectionId;
+          const targetQId = targetSection.questions[0].questionId;
+          const targetSecId = targetSection.sectionId;
+          actionHistory.pushAction({
+            type: 'section_nav',
+            description: `Go to Section ${sectionNumber}`,
+            undo: async () => {
+              if (prevQId && prevSecId) await openQuestion(prevQId, prevSecId);
+            },
+            redo: async () => {
+              await openQuestion(targetQId, targetSecId);
+            },
+          });
+          await openQuestion(targetQId, targetSecId);
+          tts.announce(`Section ${sectionNumber}: ${targetSection.sectionName}`);
+        } else {
+          tts.announce(`Section ${sectionNumber} not found.`);
+        }
+      },
+      readQuestion: () => {
+        if (currentQuestion?.questionText) {
+          tts.readQuestion(currentQuestion.questionText, globalIndex);
+        }
+      },
+      readAnswer: () => {
+        const text = dictationRef.current?.getText() ?? answerTextMap?.get(currentQuestion?.questionId ?? '') ?? '';
+        tts.readAnswer(text);
+      },
+      saveAnswer: async () => {
+        if (!currentQuestion) return;
+        const text = dictationRef.current?.getText() ?? answerTextMap?.get(currentQuestion.questionId) ?? '';
+        const newStatus: QuestionStatus = text.trim().length > 0 ? 'answered' : 'not_answered';
+        await window.fairscribe.exam.updateAnswerStatus(
+          currentQuestion.questionId, studentId, newStatus, text
+        );
+        updateQuestionStatus(currentQuestion.questionId, newStatus);
+      },
+      clearAnswer: async () => {
+        if (dictationRef.current) {
+          await dictationRef.current.clearTranscript();
+        }
+      },
+      newLine: () => {
+        if (dictationRef.current) {
+          dictationRef.current.newLine();
+        }
+      },
+      deleteLastWord: () => {
+        if (dictationRef.current) {
+          dictationRef.current.deleteLastWord();
+        }
+      },
+      insertPunctuation: (symbol: string) => {
+        if (dictationRef.current) {
+          dictationRef.current.insertPunctuation(symbol);
+        }
+      },
+      undo: () => {
+        // Text undo takes priority; fall back to app-level history
+        if (dictationRef.current && dictationRef.current.canUndo()) {
+          dictationRef.current.undo();
+        } else {
+          actionHistory.undo().then((desc) => {
+            if (desc) tts.announce(`Undone: ${desc}`);
+            else tts.announce('Nothing to undo.');
+          });
+        }
+      },
+      redo: () => {
+        if (dictationRef.current) {
+          dictationRef.current.redo();
+        }
+        actionHistory.redo().then((desc) => {
+          if (desc) tts.announce(`Redone: ${desc}`);
+        });
+      },
+      markForReview: async () => {
+        const prevStatus = statusMap.get(currentQuestion?.questionId ?? '') ?? 'not_answered';
+        await handleMarkForReview();
+        const qId = currentQuestion?.questionId;
+        if (qId) {
+          actionHistory.pushAction({
+            type: 'mark',
+            description: 'Mark for review',
+            undo: async () => {
+              await persistStatusWithoutAdvancing(prevStatus as QuestionStatus);
+            },
+            redo: async () => {
+              await handleMarkForReview();
+            },
+          });
+        }
+      },
+      unmarkReview: async () => {
+        const prevStatus = statusMap.get(currentQuestion?.questionId ?? '') ?? 'not_answered';
+        await handleUnmarkReview();
+        const qId = currentQuestion?.questionId;
+        if (qId) {
+          actionHistory.pushAction({
+            type: 'unmark',
+            description: 'Unmark review',
+            undo: async () => {
+              await persistStatusWithoutAdvancing(prevStatus as QuestionStatus);
+            },
+            redo: async () => {
+              await handleUnmarkReview();
+            },
+          });
+        }
+      },
+      submitExam: () => {
+        setShowConfirm(true);
+        tts.announce(
+          'You are about to submit your examination. Say confirm submit to finalize, or cancel to return.'
+        );
+      },
+      confirmSubmit: async () => {
+        await handleSubmit();
+      },
+      cancelAction: () => {
+        setShowConfirm(false);
+      },
+      viewCommands: () => {
+        setShowCommandRef(true);
+      },
+      closeCommands: () => {
+        setShowCommandRef(false);
+      },
+      readCommands: () => {
+        const cats = getCommandsByCategory();
+        tts.readCommandList(cats);
+      },
+    },
+    studentId,
+    examId,
+    questionId: currentQuestion?.questionId ?? '',
+    enabled: !submitted,
+    autoReadQuestions: false,
+    currentQuestionText: currentQuestion?.questionText,
+    currentQuestionNumber: globalIndex,
+  });
+
+  // Sync voice error state
+  React.useEffect(() => {
+    if (voiceState.error) setVoiceError(voiceState.error);
+  }, [voiceState.error]);
+
+  const setEngineMode = voiceState.setEngineMode;
+
+  // Sync confirm submit mode
+  React.useEffect(() => {
+    if (showConfirm) {
+      setEngineMode('confirming_submit');
+    } else {
+      // Revert to command_listening; if dictation is active, handleDictationStatusChange will override.
+      setEngineMode('command_listening');
+    }
+  }, [showConfirm, setEngineMode]);
+
+  // Dictation status change callback — sync voice engine mode
+  const handleDictationStatusChange = useCallback((status: DictationStatus) => {
+    if (showConfirm) return; // Don't override if confirm modal is open
+    if (status === 'recording') setEngineMode('dictation_recording');
+    else if (status === 'paused') setEngineMode('dictation_paused');
+    else if (status === 'processing') setEngineMode('processing');
+    else if (status === 'idle') setEngineMode('command_listening');
+  }, [setEngineMode, showConfirm]);
 
   // ---------------------------------------------------------------------------
   // Core: open a question (handles not_visited → not_answered transition)
@@ -255,7 +558,7 @@ export default function QuestionPaper() {
       const fromStatus = statusMap.get(currentQuestion.questionId) ?? 'not_visited';
 
       // 1. Persist to DB immediately (crash-safe)
-      const answerText = stubHasContent ? '[DEV_STUB_ANSWERED]' : '';
+      const answerText = answerTextMap?.get(currentQuestion.questionId) ?? '';
       await window.fairscribe.exam.updateAnswerStatus(
         currentQuestion.questionId, studentId, newStatus, answerText
       );
@@ -277,7 +580,7 @@ export default function QuestionPaper() {
       }
       // If null (last question), stay on current question
     },
-    [currentQuestion, statusMap, stubHasContent, studentId, sections, currentSectionId,
+    [currentQuestion, statusMap, answerTextMap, studentId, sections, currentSectionId,
       updateQuestionStatus, openQuestion]
   );
 
@@ -286,16 +589,16 @@ export default function QuestionPaper() {
   // ---------------------------------------------------------------------------
 
   const handleSaveAndNext = useCallback(async () => {
-    const newStatus: QuestionStatus = stubHasContent ? 'answered' : 'not_answered';
+    const newStatus: QuestionStatus = hasAnswerContent ? 'answered' : 'not_answered';
     await persistStatusAndAdvance(newStatus);
-  }, [stubHasContent, persistStatusAndAdvance]);
+  }, [hasAnswerContent, persistStatusAndAdvance]);
 
   const handleMarkAndNext = useCallback(async () => {
-    const newStatus: QuestionStatus = stubHasContent
+    const newStatus: QuestionStatus = hasAnswerContent
       ? 'answered_marked_for_review'
       : 'marked_for_review';
     await persistStatusAndAdvance(newStatus);
-  }, [stubHasContent, persistStatusAndAdvance]);
+  }, [hasAnswerContent, persistStatusAndAdvance]);
 
   /**
    * Previous — navigate to the preceding question without changing its status.
@@ -309,6 +612,59 @@ export default function QuestionPaper() {
       await openQuestion(prev.questionId, prev.sectionId);
     }
   }, [currentQuestion, sections, currentSectionId, openQuestion]);
+
+  // ---------------------------------------------------------------------------
+  // Additional Voice Command Handlers
+  // ---------------------------------------------------------------------------
+
+  const persistStatusWithoutAdvancing = useCallback(async (newStatus: QuestionStatus) => {
+    if (!currentQuestion) return;
+    try {
+      await window.fairscribe.exam.updateAnswerStatus(
+        currentQuestion.questionId,
+        studentId,
+        newStatus,
+        answerTextMap[currentQuestion.questionId] || ''
+      );
+      updateQuestionStatus(currentQuestion.questionId, newStatus);
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
+  }, [currentQuestion, studentId, answerTextMap, updateQuestionStatus]);
+
+  const handleMarkForReview = useCallback(async () => {
+    const newStatus: QuestionStatus = hasAnswerContent ? 'answered_marked_for_review' : 'marked_for_review';
+    await persistStatusWithoutAdvancing(newStatus);
+  }, [hasAnswerContent, persistStatusWithoutAdvancing]);
+
+  const handleUnmarkReview = useCallback(async () => {
+    const newStatus: QuestionStatus = hasAnswerContent ? 'answered' : 'not_answered';
+    await persistStatusWithoutAdvancing(newStatus);
+  }, [hasAnswerContent, persistStatusWithoutAdvancing]);
+
+  const handleNextSection = useCallback(async () => {
+    if (!currentQuestion) return;
+    await persistStatusWithoutAdvancing(hasAnswerContent ? 'answered' : 'not_answered');
+    const currentSectionIdx = sections.findIndex(s => s.sectionId === currentSectionId);
+    if (currentSectionIdx >= 0 && currentSectionIdx < sections.length - 1) {
+      const nextSection = sections[currentSectionIdx + 1];
+      if (nextSection.questions.length > 0) {
+        await openQuestion(nextSection.questions[0].questionId, nextSection.sectionId);
+      }
+    }
+  }, [currentQuestion, hasAnswerContent, persistStatusWithoutAdvancing, sections, currentSectionId, openQuestion]);
+
+  const handlePreviousSection = useCallback(async () => {
+    if (!currentQuestion) return;
+    await persistStatusWithoutAdvancing(hasAnswerContent ? 'answered' : 'not_answered');
+    const currentSectionIdx = sections.findIndex(s => s.sectionId === currentSectionId);
+    if (currentSectionIdx > 0) {
+      const prevSection = sections[currentSectionIdx - 1];
+      if (prevSection.questions.length > 0) {
+        await openQuestion(prevSection.questions[0].questionId, prevSection.sectionId);
+      }
+    }
+  }, [currentQuestion, hasAnswerContent, persistStatusWithoutAdvancing, sections, currentSectionId, openQuestion]);
 
   // ---------------------------------------------------------------------------
   // Submit handler
@@ -417,7 +773,25 @@ export default function QuestionPaper() {
           highContrast={highContrast}
           onHighContrastChange={setHighContrast}
         />
+        <button
+          className={submitStyles.viewCommandsBtn}
+          onClick={() => setShowCommandRef(true)}
+          aria-label="View voice commands"
+          title="View all voice commands"
+          id="view-commands-btn"
+        >
+          🗣️ View Commands
+        </button>
       </div>
+
+      {/* ─── Voice command status bar ─── */}
+      <VoiceCommandStatus
+        mode={voiceState.mode}
+        isActive={voiceState.isActive}
+        lastCommand={voiceState.lastCommand}
+        error={voiceError}
+        onDismissError={() => setVoiceError(null)}
+      />
 
       {/* ─── Main content: left question panel + right palette ─── */}
       <main className={styles.mainContent}>
@@ -452,65 +826,20 @@ export default function QuestionPaper() {
               </p>
             </div>
 
-            {/* ─── [DEV] Stub Answer Toggle ───────────────────────────────
-             * TODO (Phase 3 dictation): REMOVE this entire block when the
-             * Vosk/ASR real-time dictation engine is integrated (Phase 3).
-             *
-             * Purpose: allows testers to simulate "has answer" / "no answer"
-             * so that the 5-state palette (answered / not_answered /
-             * answered_marked_for_review / marked_for_review) can be
-             * exercised end-to-end before real dictation is available.
-             *
-             * This does NOT write real answer text — it only sets a boolean
-             * that controls which status value is written to the DB on
-             * Save & Next / Mark for Review & Next.
-             ─────────────────────────────────────────────────────────────── */}
-            <div className={styles.devAnswerToggle}>
-              <span className={styles.devBadge}>DEV</span>
-              <label
-                className={styles.devToggleLabel}
-                htmlFor={`dev-answer-${currentQuestion?.questionId}`}
-              >
-                <input
-                  id={`dev-answer-${currentQuestion?.questionId}`}
-                  type="checkbox"
-                  className={styles.devToggleCheckbox}
-                  checked={stubHasContent}
-                  onChange={(e) =>
-                    setDevHasAnswer((prev) => ({
-                      ...prev,
-                      [currentQuestion?.questionId ?? '']: e.target.checked,
-                    }))
-                  }
-                />
-                <span className={styles.devToggleText}>
-                  [DEV] Simulate answer content for this question
-                </span>
-              </label>
-            </div>
-
-            {/* ─── Phase 3 Answer Editor Placeholder ─── */}
-            {/*
-             * TODO (Phase 3): Replace this placeholder with the Slate.js
-             * constrained answer editor. It should:
-             *   - Accept dictated text from the Vosk real-time STT stream
-             *   - Support voice commands (new line, delete last word, undo, redo)
-             *   - Track full edit history (each insertion/deletion timestamped)
-             *   - Write edit events to AuditLog via audit:logEvent IPC
-             *   - Autosave answer text every 5 seconds
-             *
-             * The editor state (current text + edit history) maps to the
-             * Answer table's answerText and lastModifiedAt columns.
-             */}
-            <div className={styles.answerPlaceholder} aria-label="Answer area (Phase 3)">
-              <div className={styles.placeholderInner}>
-                <span className={styles.placeholderIcon}>🎤</span>
-                <p className={styles.placeholderTitle}>Answer Editor</p>
-                <p className={styles.placeholderDesc}>
-                  Dictation and answer editing will be available here in Phase 3.
-                </p>
-              </div>
-            </div>
+            {/* ─── Phase 3/4: Dictation Panel (voice-controllable) ─── */}
+            <DictationPanel
+              ref={dictationRef}
+              questionId={currentQuestion?.questionId ?? ''}
+              studentId={studentId}
+              examId={examId}
+              initialText={currentAnswerText}
+              onTranscriptChange={(text) => {
+                if (currentQuestion) {
+                  updateAnswerText(currentQuestion.questionId, text);
+                }
+              }}
+              onStatusChange={handleDictationStatusChange}
+            />
           </section>
 
           {/* ── Action buttons: Previous | Save & Next | Mark for Review & Next | Submit ── */}
@@ -638,6 +967,12 @@ export default function QuestionPaper() {
           </div>
         </div>
       )}
+
+      {/* ─── Voice Command Reference modal ─── */}
+      <VoiceCommandReference
+        isOpen={showCommandRef}
+        onClose={() => setShowCommandRef(false)}
+      />
     </div>
   );
 }

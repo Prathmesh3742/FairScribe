@@ -1,0 +1,54 @@
+# FairScribe STT Service — Runtime Configuration
+# ─────────────────────────────────────────────────
+# All paths are relative to the stt-service/ directory unless absolute.
+# Override any value via environment variables prefixed with FAIRSCRIBE_STT_
+# (e.g., FAIRSCRIBE_STT_HOST=0.0.0.0)
+
+# ── Server ──
+host: "127.0.0.1"
+port: 5400
+
+# ── Audio ──
+audio:
+  sample_rate: 16000          # Hz — required by both Vosk and Whisper
+  channels: 1                 # Mono
+  chunk_duration_ms: 30       # Duration of each audio chunk (VAD frame size)
+  max_recording_seconds: 600  # 10 minutes max per recording (safety cap)
+
+# ── Voice Activity Detection (Silero VAD) ──
+vad:
+  enabled: true
+  threshold: 0.4              # Speech probability threshold (0.0–1.0)
+  min_speech_duration_ms: 300 # Minimum speech segment length
+  min_silence_duration_ms: 400 # Silence gap to consider end-of-utterance
+  speech_pad_ms: 60           # Padding added around speech segments
+  model_path: "models/silero_vad.onnx"  # Auto-downloaded if missing
+
+# ── Vosk (Streaming Recognition) ──
+vosk:
+  model_path: "models/vosk-model-small-en-in-0.4"
+  # Alternatives:
+  #   "models/vosk-model-en-in-0.5"      — larger, more accurate
+  #   "models/vosk-model-small-en-us-0.15" — US English small
+
+# ── Whisper (Verification) ──
+whisper:
+  enabled: true
+  model_size: "small.en"        # Options: tiny.en, base.en, small.en
+  device: "cpu"                # "cpu" or "cuda" (GPU)
+  compute_type: "int8"         # "int8" for CPU, "float16" for GPU
+  beam_size: 5
+  model_path: "models/whisper" # CTranslate2 converted model directory
+  language: "en"
+
+# ── Session ──
+session:
+  max_concurrent: 2            # Exam terminal: command engine + dictation
+  idle_timeout_seconds: 300    # Auto-cleanup idle sessions (5 min)
+  audio_buffer_max_mb: 50      # Max audio buffer per session
+
+# ── Logging ──
+logging:
+  level: "INFO"                # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s | %(levelname)-8s | %(name)-24s | %(message)s"
+  file: null                   # Set to a path for file logging (e.g., "logs/stt.log")

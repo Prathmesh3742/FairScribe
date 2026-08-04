@@ -4,6 +4,7 @@ import InvigilatorUnlock from './screens/InvigilatorUnlock';
 import Login from './screens/Login';
 import Instructions from './screens/Instructions';
 import QuestionPaper from './screens/QuestionPaper';
+import ErrorBoundary from './components/ErrorBoundary';
 import './styles/global.css';
 
 /**
@@ -26,19 +27,21 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('invigilator-unlock');
 
   return (
-    <ExamSessionProvider>
-      {screen === 'invigilator-unlock' && (
-        <InvigilatorUnlock onUnlocked={() => setScreen('login')} />
-      )}
-      {screen === 'login' && (
-        <Login onLoginSuccess={() => setScreen('instructions')} />
-      )}
-      {screen === 'instructions' && (
-        <Instructions onProceed={() => setScreen('exam')} />
-      )}
-      {screen === 'exam' && (
-        <QuestionPaper />
-      )}
-    </ExamSessionProvider>
+    <ErrorBoundary name="App">
+      <ExamSessionProvider>
+        {screen === 'invigilator-unlock' && (
+          <InvigilatorUnlock onUnlocked={() => setScreen('login')} />
+        )}
+        {screen === 'login' && (
+          <Login onLoginSuccess={() => setScreen('instructions')} />
+        )}
+        {screen === 'instructions' && (
+          <Instructions onProceed={() => setScreen('exam')} />
+        )}
+        {screen === 'exam' && (
+          <QuestionPaper />
+        )}
+      </ExamSessionProvider>
+    </ErrorBoundary>
   );
 }
